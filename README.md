@@ -132,32 +132,48 @@ Save with `Ctrl+O`, press `Enter`, then exit with `Ctrl+X`.
 
 ## Step 7: Start the app
 
+This project has two web interfaces with the same features. Use **one at a time**: both save your settings to `config.toml`, and the second one would overwrite changes made in the first.
+
+### Option A: HTMX interface (recommended)
+
+A faster, lighter interface that runs without Streamlit:
+
+```bash
+./webui-htmx.sh
+```
+
+Open **<http://localhost:8510>** in your Windows browser (Chrome or Edge). On Windows without WSL, double-click `webui-htmx.bat` instead.
+
+### Option B: Classic Streamlit interface
+
 ```bash
 ./webui.sh
 ```
 
-Then open **<http://localhost:8501>** in your Windows browser (Chrome or Edge).
+Open **<http://localhost:8501>**.
 
 > A `gio: Operation not supported` message is harmless. WSL just can't open a browser by itself.
-> If port 8501 is busy, the script picks the next free one (8502, 8503…) and prints the address.
+> If the port is busy, the script picks the next free one (8511, 8512… or 8502, 8503…) and prints the address.
+> Stop either app with `Ctrl+C` in its terminal.
 
 ---
 
 ## Step 8: Make your first video
 
 1. **Video Subject:** type a topic, e.g. `5 surprising facts about the ocean`
-2. Click **Generate Video Script and Keywords** and wait 10–30 seconds. You can edit the script afterwards.
-3. **Video Settings:**
+2. **Script Language:** choose **en-US**. On *Auto Detect*, qwen2.5 sometimes writes part of the script in Chinese.
+3. Click **Generate Script & Keywords with AI** and wait 10–30 seconds. **Read the script** and fix anything odd before generating the video.
+4. **Video Settings:**
    - Video Source: **Pixabay**
    - Video Ratio: **Portrait 9:16** (required for Shorts and Reels)
-4. **Audio Settings:**
+5. **Audio Settings:**
    - Voiceover Service: **Azure TTS V1 (Edge TTS)**
-   - Voiceover Voice: pick an English one, e.g. `en-US-AriaNeural`. The default voice is Chinese, so change it.
-   - Click **Play Voice** to preview it
-5. **Subtitle Settings:** pick a font and size you like
-6. Click **Generate Video**
+   - Voiceover Voice: pick an English one, e.g. `en-US-Aria-Female`. The default voice is Chinese, so change it.
+   - Click **Voice Sample** to preview it
+6. **Subtitle Settings:** pick a font and size you like
+7. Click **Generate Video**
 
-A 30–60 second video usually takes a few minutes. When it's done you can play and download it right on the page. Files are saved in:
+A 30–60 second video usually takes a few minutes; the progress bar and log update live. When it's done you can play and download it right on the page. Past videos are under **Task Manager** at the top. Files are saved in:
 
 ```
 storage/tasks/<task-id>/final-1.mp4
@@ -165,7 +181,7 @@ storage/tasks/<task-id>/final-1.mp4
 
 ---
 
-## Step 9 (optional): Auto-publish to YouTube Shorts and Instagram
+## Step 9 (optional): Publish to YouTube Shorts and Instagram
 
 Publishing goes through **Upload-Post**, which connects to your social accounts.
 
@@ -184,18 +200,23 @@ upload_post_enabled = true
 upload_post_api_key = "PASTE_YOUR_UPLOAD_POST_KEY_HERE"
 upload_post_username = "default"              # your Upload-Post profile name
 upload_post_platforms = ["youtube", "instagram"]
-upload_post_auto_upload = true                # publish automatically when a video finishes
+upload_post_auto_upload = false               # true = publish automatically when a video finishes
 upload_post_youtube_privacy_status = "private" # "private", "unlisted", or "public"
 upload_post_youtube_made_for_kids = false
 ```
 
 You can also change these in the app under **Settings → Auto-Publish Settings**.
 
-Restart the app (`Ctrl+C`, then `./webui.sh` again) so it loads the new settings.
+Restart the app (`Ctrl+C`, then start it again) so it loads the new settings.
+
+### 9.3 Publish a video
+
+- **Manually (recommended):** when a video finishes, watch it, then click **Publish to youtube, instagram** under the player. Older videos can be published from **Task Manager**: use the upload icon on their row. The row then shows *Publishing…*, *Published*, or *Publish failed* (hover the **?** for the reason).
+- **Automatically:** set `upload_post_auto_upload = true` (or tick **Enable Auto-Publish** in Settings) and every finished video is published right away.
 
 > 💡 Start with `"private"`. Each video lands in **YouTube Studio** as private so you can watch it before switching it to Public. Once you trust the results, change it to `"public"`.
 >
-> ⚠️ With `upload_post_auto_upload = true`, **every** video you generate is published. Set it back to `false` to stop publishing.
+> ⚠️ With `upload_post_auto_upload = true`, **every** video you generate is published without review. Set it back to `false` to stop.
 
 ### Check that your key works
 
@@ -221,12 +242,14 @@ You should see your profile name and the connected platforms.
 | Problem | Fix |
 |---|---|
 | `Please Enter the Pixabay API Key` | Check `pixabay_api_keys` in `config.toml`, then restart the app |
-| Keyword generation fails or returns odd text | Use a bigger model (`qwen2.5:14b`), or click **Generate Video Keywords** again |
+| Script is partly in Chinese | Set **Script Language** to `en-US`, or add `Write only in English` under **Advanced Script Settings → Custom Script Requirements**, then regenerate |
+| Keyword generation fails or returns odd text | Use a bigger model (`qwen2.5:14b`), or click **Generate Keywords with AI** again |
 | `could not connect to ollama` | Run `ollama serve`, then check with `ollama list` |
 | Video has Chinese voice | Change **Voiceover Voice** to an `en-US-…` voice |
 | Page is blank | Use Chrome or Edge and refresh |
 | Slow script generation | Normal on CPU. A GPU speeds it up a lot; check with `nvidia-smi` |
-| Nothing posted to YouTube | Check `upload_post_enabled = true` and `upload_post_auto_upload = true`, and that the profile name matches Upload-Post exactly |
+| Nothing posted to YouTube | Click **Publish** under the finished video (or enable auto-publish), and check that the profile name matches Upload-Post exactly |
+| Settings changed by themselves | You probably had both interfaces open at once. Run only one of `webui-htmx.sh` / `webui.sh` |
 
 ---
 

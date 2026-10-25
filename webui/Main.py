@@ -1110,6 +1110,7 @@ def _collect_task_summaries(limit=20):
             "subject": subject,
             "state": task.get("state"),
             "cross_post_state": task.get("cross_post_state"),
+            "cross_post_error": task.get("cross_post_error"),
             "progress": int(task.get("progress", 0) or 0),
             "mtime": task_mtime,
             "task_path": task_path,
@@ -1277,8 +1278,16 @@ def _build_video_download_name(subject, index, total):
 
 
 def _render_task_table(filtered_tasks, key_prefix):
+    # 启用 Upload-Post 时每行多一个发布按钮，操作列相应加宽。
+    publish_enabled = bool(config.app.get("upload_post_enabled", False))
+    column_spec = (
+        [1.1, 1.6, 2.6, 0.8, 2.0] if publish_enabled else [1.1, 1.7, 3.0, 0.8, 1.6]
+    )
+    publish_platforms = ", ".join(
+        str(platform) for platform in config.app.get("upload_post_platforms", []) or []
+    )
     with st.container(key=f"task_table_header_{key_prefix}"):
-        header_cols = st.columns([1.1, 1.7, 3.0, 0.8, 1.6], vertical_alignment="center")
+        header_cols = st.columns(column_spec, vertical_alignment="center")
         header_cols[0].caption(tr("Task Status"))
         header_cols[1].caption(tr("Task Updated At"))
         header_cols[2].caption(tr("Task Subject"))
@@ -1309,16 +1318,26 @@ def _render_task_table(filtered_tasks, key_prefix):
                 key=f"task_row_{key_prefix}_{safe_task_key}", border=True
             ):
                 row_cols = st.columns(
-                    [1.1, 1.7, 3.0, 0.8, 1.6],
+                    column_spec,
                     vertical_alignment="center",
                 )
                 row_cols[0].write(_task_state_label(task["state"], has_video))
+                cross_post_state = task.get("cross_post_state")
+                if cross_post_state in _ACTIVE_CROSS_POST_STATES:
+                    row_cols[0].caption(tr("Publish Status Publishing"))
+                elif cross_post_state == const.CROSS_POST_STATE_COMPLETE:
+                    row_cols[0].caption(tr("Publish Status Published"))
+                elif cross_post_state == const.CROSS_POST_STATE_FAILED:
+                    row_cols[0].caption(
+                        tr("Publish Status Failed"),
+                        help=str(task.get("cross_post_error") or "-"),
+                    )
                 row_cols[1].write(_format_task_time(task["mtime"]))
                 row_cols[2].write(_format_task_subject(task["subject"]))
                 row_cols[3].write(f"{task['progress']}%")
 
                 action_cols = row_cols[4].columns(
-                    4,
+                    5 if publish_enabled else 4,
                     vertical_alignment="center",
                     gap="small",
                 )
@@ -1377,6 +1396,34 @@ def _render_task_table(filtered_tasks, key_prefix):
                             st.rerun()
                         else:
                             st.error(tr("Task Delete Failed"))
+
+                if publish_enabled:
+                    with action_cols[4]:
+                        publish_label = tr("Publish Video").format(
+                            platforms=publish_platforms or "-"
+                        )
+                        publishing = (
+                            task.get("cross_post_state") in _ACTIVE_CROSS_POST_STATES
+                        )
+                        if st.button(
+                            publish_label,
+                            key=f"publish_task_{key_prefix}_{task_id}",
+                            use_container_width=True,
+                            icon=":material/publish:",
+                            help=(
+                                tr("Publishing Video").format(
+                                    platforms=publish_platforms or "-"
+                                )
+                                if publishing
+                                else publish_label
+                            ),
+                            disabled=not has_video or is_processing or publishing,
+                        ):
+                            error = tm.publish_task(task_id)
+                            if error:
+                                st.toast(tr("Publish Video Failed").format(error=error))
+                            else:
+                                st.toast(tr("Publish Video Queued"))
 
 
 def _render_task_manager_panel(tasks=None):
@@ -2136,6 +2183,8 @@ def _render_generation_task_snapshot(task_id, task):
             f"video_files={video_files}, error={exc}"
         )
 
+    if state == const.TASK_STATE_COMPLETE:
+        _render_publish_controls(task_id, task)
     _render_generation_logs(task_id)
     if (
         state == const.TASK_STATE_COMPLETE
@@ -2147,6 +2196,98 @@ def _render_generation_task_snapshot(task_id, task):
         if config.ui.get("open_task_folder_on_completion", True):
             open_task_folder(task_id)
         logger.info(f"{tr('Video Generation Completed')}: task_id={task_id}")
+
+
+_ACTIVE_CROSS_POST_STATES = {
+    const.CROSS_POST_STATE_PENDING,
+    const.CROSS_POST_STATE_PROCESSING,
+}
+
+
+def _cross_post_result_urls(results):
+    """从 Upload-Post 返回结果中提取各平台的作品链接，供完成提示展示。"""
+    urls = []
+
+    def collect(value):
+        if isinstance(value, dict):
+            for key, item in value.items():
+                if key in {"url", "post_url", "video_url"} and isinstance(item, str):
+                    if item.startswith("http") and item not in urls:
+                        urls.append(item)
+                else:
+                    collect(item)
+        elif isinstance(value, list):
+            for item in value:
+                collect(item)
+
+    collect(results or [])
+    return urls
+
+
+def _render_publish_controls(task_id, task):
+    """
+    在成片下方提供手动发布入口，并展示自动或手动发布的状态。
+
+    自动发布只在渲染完成时触发；手动入口让用户检查成片后再发布，也可以
+    重新发布失败的任务。没有启用 Upload-Post 时不展示任何内容。
+    """
+    if not config.app.get("upload_post_enabled", False):
+        return
+    platforms = ", ".join(
+        str(platform) for platform in config.app.get("upload_post_platforms", []) or []
+    )
+    cross_post_state = task.get("cross_post_state")
+    if cross_post_state in _ACTIVE_CROSS_POST_STATES:
+        _render_publish_progress(task_id, platforms)
+        return
+
+    if cross_post_state == const.CROSS_POST_STATE_COMPLETE:
+        message = tr("Publish Video Completed").format(platforms=platforms or "-")
+        urls = _cross_post_result_urls(task.get("cross_post_results"))
+        if urls:
+            message += "\n\n" + "\n".join(f"- {url}" for url in urls)
+        st.success(message)
+    elif cross_post_state == const.CROSS_POST_STATE_FAILED:
+        st.error(
+            tr("Publish Video Failed").format(
+                error=task.get("cross_post_error") or "-"
+            )
+        )
+
+    privacy = (
+        config.app.get("upload_post_youtube_privacy_status", "public")
+        if "youtube" in platforms
+        else ""
+    )
+    publish_columns = st.columns([1, 2, 1])
+    with publish_columns[1]:
+        if st.button(
+            tr("Publish Video").format(platforms=platforms or "-"),
+            key=f"publish_task_{task_id}",
+            icon=":material/publish:",
+            use_container_width=True,
+            disabled=not platforms,
+            help=tr("Publish Video Help").format(privacy=privacy or "-"),
+        ):
+            error = tm.publish_task(task_id)
+            if error:
+                st.error(tr("Publish Video Failed").format(error=error))
+            else:
+                st.toast(tr("Publish Video Queued"))
+                st.rerun()
+
+
+@st.fragment(run_every="3s")
+def _render_publish_progress(task_id, platforms):
+    """发布期间单独轮询状态，结束后刷新整页展示结果和重新发布入口。"""
+    try:
+        task = sm.state.get_task(task_id) or {}
+    except Exception as exc:
+        logger.warning(f"failed to query publish state: task_id={task_id}, error={exc}")
+        task = {}
+    if task.get("cross_post_state") not in _ACTIVE_CROSS_POST_STATES:
+        st.rerun(scope="app")
+    st.info(tr("Publishing Video").format(platforms=platforms or "-"))
 
 
 @st.fragment(run_every=webui_task.TASK_LOG_REFRESH_INTERVAL_SECONDS)

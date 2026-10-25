@@ -631,6 +631,15 @@
     "Confirm Infistar Charge Required": "Please confirm the Infistar video charge before generating.",
     "Infistar MiniMax Landscape Help": "The current MiniMax H3 route generates landscape footage. Portrait output uses the selected video fit mode to crop it or add black bars.",
     "Infistar Video API Key": "Infistar Video API Key",
-    "Infistar Video Base URL": "Infistar Video Base URL"
+    "Infistar Video Base URL": "Infistar Video Base URL",
+    "Publish Video": "Publish to {platforms}",
+    "Publish Video Help": "Publishes the finished video with the Upload-Post settings under Settings → Auto-Publish Settings. YouTube privacy: {privacy}.",
+    "Publish Video Queued": "Publishing started",
+    "Publishing Video": "Publishing to {platforms}… This can take a few minutes.",
+    "Publish Video Completed": "Published to {platforms}.",
+    "Publish Video Failed": "Publishing failed: {error}",
+    "Publish Status Publishing": "Publishing…",
+    "Publish Status Published": "Published",
+    "Publish Status Failed": "Publish failed"
   }
 }

@@ -631,6 +631,15 @@
     "Confirm Infistar Charge Required": "请先确认无限星河视频生成费用。",
     "Infistar MiniMax Landscape Help": "MiniMax H3 当前线路生成横屏素材。选择竖屏成片时，将按“素材画面适配”设置裁剪或留黑边。",
     "Infistar Video API Key": "无限星河视频 API Key",
-    "Infistar Video Base URL": "无限星河视频 Base URL"
+    "Infistar Video Base URL": "无限星河视频 Base URL",
+    "Publish Video": "发布到 {platforms}",
+    "Publish Video Help": "使用“设置 → 自动发布设置”中的 Upload-Post 配置发布当前成片。YouTube 可见性：{privacy}。",
+    "Publish Video Queued": "已开始发布",
+    "Publishing Video": "正在发布到 {platforms}…可能需要几分钟。",
+    "Publish Video Completed": "已发布到 {platforms}。",
+    "Publish Video Failed": "发布失败：{error}",
+    "Publish Status Publishing": "发布中…",
+    "Publish Status Published": "已发布",
+    "Publish Status Failed": "发布失败"
   }
 }

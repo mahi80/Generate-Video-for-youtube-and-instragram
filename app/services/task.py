@@ -1524,6 +1524,84 @@ def _schedule_cross_post(
     return None
 
 
+def publish_task(task_id: str) -> str | None:
+    """
+    用当前 Upload-Post 设置手动发布一个已完成的任务。
+
+    自动发布只在渲染结束时触发一次；这里让用户在检查成片后再决定是否发布，
+    也能重新发布失败的任务或历史任务。成功入队返回 None，否则返回原因。
+    """
+    service = upload_post.upload_post_service
+    if not service.is_configured():
+        return "Upload-Post is not configured (API key, profile username and Enable Upload-Post Integration are required)"
+    platforms = [str(platform) for platform in service.platforms or [] if str(platform).strip()]
+    if not platforms:
+        return "no publishing platforms are selected"
+
+    task = sm.state.get_task(task_id) or {}
+    if task.get("cross_post_state") in (
+        const.CROSS_POST_STATE_PENDING,
+        const.CROSS_POST_STATE_PROCESSING,
+    ) and _is_cross_post_active_in_process(task_id):
+        return "this video is already being published"
+
+    task_path = utils.task_dir(task_id)
+    script_data = {}
+    script_file = os.path.join(task_path, "script.json")
+    if os.path.isfile(script_file):
+        try:
+            with open(script_file, "r", encoding="utf-8") as file:
+                script_data = json.load(file)
+        except (OSError, ValueError) as exc:
+            logger.warning(f"failed to read task script for publishing: {task_id}, {exc}")
+    raw_params = script_data.get("params") if isinstance(script_data, dict) else None
+    try:
+        params = VideoParams.model_validate(
+            raw_params if isinstance(raw_params, dict) else {"video_subject": task.get("video_subject") or ""}
+        )
+    except Exception as exc:  # noqa: BLE001 - reported to the user as the failure reason
+        return f"task parameters are invalid: {exc}"
+
+    video_paths = [path for path in task.get("videos") or [] if os.path.isfile(path)]
+    if not video_paths and os.path.isdir(task_path):
+        # 历史任务可能不在当前进程的状态存储中，直接使用目录中的最终成片。
+        video_paths = sorted(
+            os.path.join(task_path, name)
+            for name in os.listdir(task_path)
+            if re.fullmatch(r"final-\d+\.(mp4|mov|mkv|webm)", name, re.IGNORECASE)
+        )
+    if not video_paths:
+        return "the finished video file was not found"
+
+    video_script = task.get("script") or script_data.get("script") or params.video_script or ""
+    if not task:
+        sm.state.update_task(
+            task_id,
+            state=const.TASK_STATE_COMPLETE,
+            progress=100,
+            videos=video_paths,
+            script=video_script,
+            video_subject=params.video_subject,
+        )
+    _patch_cross_post_state(
+        task_id,
+        cross_post_state=const.CROSS_POST_STATE_PENDING,
+        cross_post_results=None,
+        cross_post_error=None,
+        cross_post_owner=_cross_post_process_owner,
+    )
+    logger.info(f"manual publish requested, task_id: {task_id}, platforms: {platforms}")
+    return _schedule_cross_post(
+        task_id=task_id,
+        video_paths=video_paths,
+        params=params,
+        video_script=video_script,
+        platforms=platforms,
+        youtube_privacy_status=service.youtube_privacy_status,
+        youtube_made_for_kids=service.youtube_made_for_kids,
+    )
+
+
 def _run_pipeline(
     task_id,
     params: VideoParams,
