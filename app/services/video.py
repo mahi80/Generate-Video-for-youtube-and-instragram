@@ -5,6 +5,7 @@ import io
 import math
 import os
 import random
+import re
 import gc
 import subprocess
 import sys
@@ -26,6 +27,7 @@ from moviepy import (
     TextClip,
     VideoFileClip,
     afx,
+    vfx,
 )
 from moviepy.video.tools.subtitles import SubtitlesClip
 from PIL import Image, ImageColor, ImageDraw, ImageFont, ImageOps
@@ -1293,6 +1295,118 @@ def combine_videos(
     return combined_video_path
 
 
+def combine_scene_videos(
+    combined_video_path: str,
+    scenes: List[tuple[str, float]],
+    audio_file: str,
+    video_aspect: VideoAspect = VideoAspect.portrait,
+    video_fit_mode: VideoFitMode = VideoFitMode.cover,
+    threads: int = 2,
+    clip_speed: float = 1.0,
+    progress_callback: Callable[[float], None] | None = None,
+) -> str:
+    """
+    Build the footage track for Scene Sync: one clip per scene, cut to its length.
+
+    ``scenes`` is an ordered list of ``(clip_path, seconds)`` whose durations follow
+    the narration, so every cut lands on a sentence boundary. Clips shorter than
+    their scene are looped; the last scene is extended to cover the audio.
+    """
+    audio_clip = AudioFileClip(audio_file)
+    try:
+        audio_duration = audio_clip.duration
+    finally:
+        close_clip(audio_clip)
+    required_video_duration = _get_required_video_duration(audio_duration)
+    normalized_clip_speed = utils.normalize_clip_speed(clip_speed)
+    output_dir = os.path.dirname(combined_video_path)
+    video_width, video_height = VideoAspect(video_aspect).to_resolution()
+    fit_mode = VideoFitMode(video_fit_mode)
+
+    planned = [(path, float(seconds)) for path, seconds in scenes if seconds > 0]
+    if not planned:
+        raise RuntimeError("scene plan is empty")
+    covered = sum(seconds for _, seconds in planned)
+    if covered < required_video_duration:
+        last_path, last_seconds = planned[-1]
+        planned[-1] = (last_path, last_seconds + required_video_duration - covered)
+    logger.info(
+        f"scene sync: rendering {len(planned)} shots for {audio_duration:.2f}s of narration"
+    )
+
+    def render_shot(indexed_scene):
+        index, (video_path, seconds) = indexed_scene
+        source_clip = None
+        clip = None
+        clip_file = None
+        try:
+            source_clip = _open_video_clip_quietly(video_path)
+            source_duration = float(source_clip.duration)
+            needed_source = seconds * normalized_clip_speed
+            if source_duration > needed_source + 0.5:
+                # 跳过素材开头常见的淡入或静止画面，但不超过一秒。
+                offset = min(1.0, (source_duration - needed_source) * 0.25)
+                clip = source_clip.subclipped(offset, offset + needed_source)
+            else:
+                clip = source_clip
+            if normalized_clip_speed != 1.0:
+                clip = clip.with_speed_scaled(normalized_clip_speed)
+            if clip.duration < seconds:
+                clip = clip.with_effects([vfx.Loop(duration=seconds)])
+            clip = clip.with_duration(seconds)
+            if tuple(clip.size) != (video_width, video_height):
+                clip = _fit_clip_to_canvas(
+                    clip, target_width=video_width, target_height=video_height,
+                    fit_mode=fit_mode,
+                )
+            with tempfile.NamedTemporaryFile(
+                dir=output_dir or ".", prefix="temp-scene-", suffix=".mp4", delete=False
+            ) as temporary_clip:
+                clip_file = temporary_clip.name
+            _write_videofile_with_codec_fallback(
+                clip, clip_file, codec=_get_configured_video_codec(), logger=None, fps=fps,
+            )
+            rendered, clip_file = clip_file, None
+            return index, rendered
+        except Exception as exc:
+            logger.error(f"scene sync: failed to render shot {index + 1}: {exc}")
+            return index, None
+        finally:
+            # 派生片段与源片段共用同一个 FFmpeg reader，只需关闭一次。
+            close_clip(clip if clip is not None else source_clip)
+            if clip_file:
+                delete_files(clip_file)
+
+    render_in_task_scope = logging_utils.bind_log_scope(render_shot)
+    rendered_files: dict[int, str] = {}
+    workers = min(_get_clip_processing_concurrency(), len(planned))
+    with ThreadPoolExecutor(max_workers=max(1, workers), thread_name_prefix="scene-render") as executor:
+        for done, (index, clip_file) in enumerate(
+            executor.map(render_in_task_scope, enumerate(planned)), start=1
+        ):
+            if clip_file:
+                rendered_files[index] = clip_file
+            logger.info(f"scene sync: rendered shot {done} of {len(planned)}")
+            if progress_callback:
+                progress_callback(done / len(planned))
+
+    clip_files = [rendered_files[index] for index in sorted(rendered_files)]
+    if not clip_files:
+        raise RuntimeError("no scene shots could be rendered")
+    try:
+        concat_video_clips_with_ffmpeg(
+            clip_files=clip_files,
+            output_file=combined_video_path,
+            threads=threads,
+            output_dir=output_dir,
+            max_duration=audio_duration,
+        )
+    finally:
+        delete_files(clip_files)
+    logger.info("scene sync: footage track completed")
+    return combined_video_path
+
+
 def wrap_text(text, max_width, font="Arial", fontsize=60):
     # 字幕换行必须在真正创建 TextClip 前完成，否则 MoviePy 只会按原始文本
     # 计算渲染区域。这里用 PIL 按当前字体和字号测量宽度，确保每一行都尽量
@@ -1566,6 +1680,130 @@ def subtitle_font_supports_text(font_path: str, text: str) -> bool:
     return _subtitle_font_supports_sample(font_path, sample)
 
 
+# 卡拉 OK 字幕每屏只显示几个词，匹配短视频平台的主流字幕节奏。
+KARAOKE_MAX_WORDS = 3
+KARAOKE_MAX_CHARS = 22
+KARAOKE_PAUSE_SECONDS = 0.45
+KARAOKE_DEFAULT_HIGHLIGHT = "#FFD60A"
+_KARAOKE_BREAK_PATTERN = re.compile(r"[.!?;:,。！？；：，]$")
+
+
+def _karaoke_chunks(word_cues):
+    """Group word cues into short on-screen phrases."""
+    chunks, current = [], []
+    for index, ((start, end), word) in enumerate(word_cues):
+        word = str(word).strip()
+        if not word:
+            continue
+        current.append((float(start), float(end), word))
+        next_start = word_cues[index + 1][0][0] if index + 1 < len(word_cues) else None
+        text_length = sum(len(item[2]) + 1 for item in current)
+        if (
+            len(current) >= KARAOKE_MAX_WORDS
+            or text_length >= KARAOKE_MAX_CHARS
+            or _KARAOKE_BREAK_PATTERN.search(word)
+            or next_start is None
+            or next_start - end > KARAOKE_PAUSE_SECONDS
+        ):
+            chunks.append(current)
+            current = []
+    if current:
+        chunks.append(current)
+    return chunks
+
+
+def _karaoke_frame(words, active, *, font, max_width, fill, highlight, stroke_color,
+                   stroke_width, background_color):
+    """Draw one phrase with the active word highlighted; returns an RGBA image."""
+    space = font.getlength(" ")
+    widths = [font.getlength(word) for word in words]
+    lines, line, line_width = [], [], 0.0
+    for index, width in enumerate(widths):
+        extra = width if not line else width + space
+        if line and line_width + extra > max_width:
+            lines.append((line, line_width))
+            line, line_width = [], 0.0
+            extra = width
+        line.append(index)
+        line_width += extra
+    if line:
+        lines.append((line, line_width))
+
+    ascent, descent = font.getmetrics()
+    line_height = ascent + descent + stroke_width * 2
+    pad_x = int(font.size * 0.45) if background_color else stroke_width * 2 + 4
+    pad_y = int(font.size * 0.25) if background_color else stroke_width * 2 + 4
+    image_width = int(max(width for _, width in lines) + pad_x * 2)
+    image_height = int(line_height * len(lines) + pad_y * 2)
+    image = Image.new("RGBA", (image_width, image_height), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(image)
+    if background_color:
+        red, green, blue = ImageColor.getrgb(background_color)[:3]
+        draw.rounded_rectangle(
+            (0, 0, image_width - 1, image_height - 1),
+            radius=int(font.size * 0.35),
+            fill=(red, green, blue, 150),
+        )
+    y = pad_y + stroke_width
+    for indices, width in lines:
+        x = (image_width - width) / 2
+        for index in indices:
+            draw.text(
+                (x, y),
+                words[index],
+                font=font,
+                fill=highlight if index == active else fill,
+                stroke_width=stroke_width,
+                stroke_fill=stroke_color,
+            )
+            x += widths[index] + space
+        y += line_height
+    return image
+
+
+def _karaoke_caption_clips(*, word_cues, params, font_path, video_width, background_color):
+    """
+    Build Shorts-style captions: short phrases with the spoken word highlighted.
+
+    ``word_cues`` are ``((start, end), word)`` pairs from a word-level subtitle
+    file. Each phrase stays on screen until the next one starts, and a new image
+    is shown at every word boundary with that word in the highlight colour.
+    """
+    font_size = int(params.font_size)
+    stroke_width = max(0, int(round(float(params.stroke_width or 0) * 1.5)))
+    font = ImageFont.truetype(font_path, font_size)
+    highlight = getattr(params, "subtitle_highlight_color", "") or KARAOKE_DEFAULT_HIGHLIGHT
+    max_width = video_width * 0.86
+    animate = getattr(params, "subtitle_animation", "none") in ("pop_spring", "spring", "pop")
+
+    chunks = _karaoke_chunks(list(word_cues))
+    clips = []
+    for chunk_index, chunk in enumerate(chunks):
+        chunk_end = chunk[-1][1]
+        if chunk_index + 1 < len(chunks):
+            next_start = chunks[chunk_index + 1][0][0]
+            # 短停顿内保持上一句，避免字幕闪烁；长停顿则让画面留白。
+            if next_start - chunk_end <= KARAOKE_PAUSE_SECONDS:
+                chunk_end = next_start
+        words = [word for _, _, word in chunk]
+        for word_index, (start, _end, _word) in enumerate(chunk):
+            end = chunk[word_index + 1][0] if word_index + 1 < len(chunk) else chunk_end
+            if end <= start:
+                continue
+            frame = _karaoke_frame(
+                words, word_index, font=font, max_width=max_width,
+                fill=params.text_fore_color or "#FFFFFF", highlight=highlight,
+                stroke_color=params.stroke_color or "#000000", stroke_width=stroke_width,
+                background_color=background_color,
+            )
+            clip = ImageClip(np.array(frame)).with_start(start).with_duration(end - start)
+            if animate and word_index == 0:
+                clip = _apply_subtitle_spring_animation(clip, end - start)
+            clips.append(clip)
+    logger.info(f"karaoke captions: {len(chunks)} phrases, {len(clips)} frames")
+    return clips
+
+
 def generate_video(
     video_path: str,
     audio_path: str,
@@ -1766,6 +2004,9 @@ def generate_video(
         if anim_type in ("pop_spring", "spring", "pop"):
             _clip = _apply_subtitle_spring_animation(_clip, duration)
 
+        return place_subtitle_clip(_clip)
+
+    def place_subtitle_clip(_clip):
         if params.subtitle_position == "bottom":
             _clip = _clip.with_position(("center", video_height * 0.95 - _clip.h))
         elif params.subtitle_position == "top":
@@ -1817,9 +2058,21 @@ def generate_video(
                 )
             )
             text_clips = []
-            for item in sub.subtitles:
-                clip = create_text_clip(subtitle_item=item)
-                text_clips.append(clip)
+            if getattr(params, "subtitle_display_mode", "sentence") == "karaoke":
+                text_clips = [
+                    place_subtitle_clip(clip)
+                    for clip in _karaoke_caption_clips(
+                        word_cues=sub.subtitles,
+                        params=params,
+                        font_path=font_path,
+                        video_width=video_width,
+                        background_color=resolve_subtitle_background_color(),
+                    )
+                ]
+            else:
+                for item in sub.subtitles:
+                    clip = create_text_clip(subtitle_item=item)
+                    text_clips.append(clip)
             video_clip = CompositeVideoClip([video_clip, *text_clips])
             clip_stack.callback(video_clip.close)
 

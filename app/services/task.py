@@ -26,6 +26,7 @@ from app.services import (
     metaso_minimax,
     muapi,
     ofox,
+    scene_sync,
     sonilo,
     subtitle,
     task_artifacts,
@@ -677,7 +678,11 @@ def generate_subtitle(task_id, params, video_script, sub_maker, audio_file):
         )
         return ""
 
-    is_word_level = getattr(params, "subtitle_display_mode", "sentence") == "word_by_word"
+    # 逐词和卡拉 OK 字幕都需要词级时间轴。
+    is_word_level = getattr(params, "subtitle_display_mode", "sentence") in (
+        "word_by_word",
+        "karaoke",
+    )
 
     # A failed retry must never reuse captions from an earlier narration.
     with staged_subtitle_file(final_subtitle_path) as subtitle_path:
@@ -988,6 +993,7 @@ def _get_material_source_groups(task_id: str, video_paths: list[str]) -> dict[st
 def generate_final_videos(
     task_id, params, downloaded_videos, audio_file, subtitle_path, audio_duration,
     *, partial_results: dict | None = None,
+    scene_plans: list[list[tuple[str, float]]] | None = None,
 ):
     """Record completed outputs even if a later clip raises before returning."""
     final_video_paths = []
@@ -1000,9 +1006,12 @@ def generate_final_videos(
             videos=final_video_paths, combined_videos=combined_video_paths,
             warnings=warnings,
         )
-    allocate_batch_materials = params.video_count > 1 and params.video_source in {
-        "pexels", "pixabay", "coverr", "local"
-    }
+    # Scene Sync 已为每条视频分别选片，不再需要批量素材分配。
+    allocate_batch_materials = (
+        not scene_plans
+        and params.video_count > 1
+        and params.video_source in {"pexels", "pixabay", "coverr", "local"}
+    )
     source_usage = {}
     material_selections = []
     source_groups = (
@@ -1046,22 +1055,37 @@ def generate_final_videos(
         # 每条视频占 50% 进度中的一份，合成与最终编码各占一半。片段处理是
         # 合成里最耗时的部分，逐段推进这一半的进度。
         combine_share = 50 / params.video_count / 2
-        video.combine_videos(
-            combined_video_path=combined_video_path,
-            video_paths=downloaded_videos,
-            audio_file=audio_file,
-            video_aspect=params.video_aspect,
-            video_fit_mode=params.video_fit_mode,
-            video_concat_mode=video_concat_mode,
-            video_transition_mode=video_transition_mode,
-            max_clip_duration=params.video_clip_duration,
-            threads=params.n_threads,
-            clip_speed=params.video_clip_speed,
-            progress_callback=_stage_progress_reporter(
-                task_id, _progress, _progress + combine_share
-            ),
-            **batch_options,
-        )
+        if scene_plans:
+            # Scene Sync 已按句子选好素材和时长，直接按计划拼接。
+            video.combine_scene_videos(
+                combined_video_path=combined_video_path,
+                scenes=scene_plans[i % len(scene_plans)],
+                audio_file=audio_file,
+                video_aspect=params.video_aspect,
+                video_fit_mode=params.video_fit_mode,
+                threads=params.n_threads,
+                clip_speed=params.video_clip_speed,
+                progress_callback=_stage_progress_reporter(
+                    task_id, _progress, _progress + combine_share
+                ),
+            )
+        else:
+            video.combine_videos(
+                combined_video_path=combined_video_path,
+                video_paths=downloaded_videos,
+                audio_file=audio_file,
+                video_aspect=params.video_aspect,
+                video_fit_mode=params.video_fit_mode,
+                video_concat_mode=video_concat_mode,
+                video_transition_mode=video_transition_mode,
+                max_clip_duration=params.video_clip_duration,
+                threads=params.n_threads,
+                clip_speed=params.video_clip_speed,
+                progress_callback=_stage_progress_reporter(
+                    task_id, _progress, _progress + combine_share
+                ),
+                **batch_options,
+            )
         if allocate_batch_materials:
             selected_sources = list(dict.fromkeys(used_video_paths))
             reused_sources = [file for file in selected_sources if source_usage.get(file, 0)]
@@ -1875,13 +1899,36 @@ def _run_pipeline(
     sm.state.update_task(task_id, state=const.TASK_STATE_PROCESSING, progress=40)
 
     # 5. Get video materials
-    downloaded_videos = get_video_materials(
-        task_id,
-        params,
-        video_terms,
-        audio_duration,
-        loomloom_video_request=loomloom_video_request,
-    )
+    scene_plans = None
+    if scene_sync.is_supported(params):
+        try:
+            scene_plans = scene_sync.plan_scenes(
+                task_id,
+                params,
+                video_script,
+                video_terms,
+                sub_maker,
+                subtitle_path,
+                audio_duration,
+                progress_callback=_stage_progress_reporter(task_id, 40, 50),
+            )
+        except Exception as exc:
+            logger.exception(f"scene sync failed, using default material flow: {exc}")
+            scene_plans = None
+        if not scene_plans:
+            logger.warning("scene sync produced no plan; falling back to keyword materials")
+    if scene_plans:
+        downloaded_videos = list(
+            dict.fromkeys(clip for plan in scene_plans for clip, _ in plan)
+        )
+    else:
+        downloaded_videos = get_video_materials(
+            task_id,
+            params,
+            video_terms,
+            audio_duration,
+            loomloom_video_request=loomloom_video_request,
+        )
     if not downloaded_videos:
         return _mark_task_failed(
             task_id,
@@ -1916,6 +1963,7 @@ def _run_pipeline(
             subtitle_path,
             audio_duration,
             partial_results=partial_results,
+            scene_plans=scene_plans,
         )
     except Exception as exc:
         logger.exception(f"video batch failed, task_id: {task_id}, error: {exc}")

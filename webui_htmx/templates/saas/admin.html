@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Admin{% endblock %}
+{% block content %}
+<div class="wizard-head">
+  <h1>Admin</h1>
+  <p class="muted">Users, sign-ins and videos. Platform settings and API keys live in <a href="/studio">Studio → Settings</a>.</p>
+</div>
+
+<div class="stat-grid">
+  <div class="metric"><div class="metric-label">Users</div><div class="metric-value">{{ stats.users }}</div></div>
+  <div class="metric"><div class="metric-label">New users (7 days)</div><div class="metric-value">{{ stats.new_users_7d }}</div></div>
+  <div class="metric"><div class="metric-label">Sign-ins (24 h)</div><div class="metric-value">{{ stats.logins_24h }}</div></div>
+  <div class="metric"><div class="metric-label">Videos (24 h)</div><div class="metric-value">{{ stats.videos_24h }}</div></div>
+  <div class="metric"><div class="metric-label">Videos (all time)</div><div class="metric-value">{{ stats.videos_total }}</div></div>
+  <div class="metric"><div class="metric-label">Failed (all time)</div><div class="metric-value">{{ stats.failed_total }}</div></div>
+</div>
+
+<section class="card admin-section">
+  <h2>Users</h2>
+  <div class="table-wrap"><table class="data-table">
+    <thead><tr><th>Email</th><th>Name</th><th>Role</th><th>Videos</th><th>Joined</th><th>Last sign-in</th><th class="num">Actions</th></tr></thead>
+    <tbody>
+    {% for u in users %}
+      <tr class="{{ 'is-disabled' if not u.active }}">
+        <td>{{ u.email }}</td><td>{{ u.name }}</td>
+        <td><span class="badge {{ 'badge-admin' if u.role == 'admin' }}">{{ u.role }}</span>{% if not u.active %} <span class="badge badge-off">disabled</span>{% endif %}</td>
+        <td class="num">{{ u.videos }}</td>
+        <td>{{ u.created_at.strftime('%Y-%m-%d') }}</td>
+        <td>{{ u.last_login_at.strftime('%Y-%m-%d %H:%M') if u.last_login_at else '–' }}</td>
+        <td class="num"><div class="actions">
+          {% if u.id != user.id %}
+          <form method="post" action="/admin/users/{{ u.id }}/{{ 'make-user' if u.role == 'admin' else 'make-admin' }}"><button class="btn btn-tertiary btn-sm">{{ 'Remove admin' if u.role == 'admin' else 'Make admin' }}</button></form>
+          <form method="post" action="/admin/users/{{ u.id }}/{{ 'disable' if u.active else 'enable' }}"><button class="btn btn-tertiary btn-sm {{ 'danger' if u.active }}">{{ 'Disable' if u.active else 'Enable' }}</button></form>
+          {% else %}<span class="muted small">you</span>{% endif %}
+        </div></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+</section>
+
+<div class="admin-columns">
+  <section class="card admin-section">
+    <h2>Recent sign-ins</h2>
+    <div class="table-wrap"><table class="data-table">
+      <thead><tr><th>When</th><th>Email</th><th>Method</th><th>IP</th></tr></thead>
+      <tbody>{% for l in logins %}<tr><td>{{ l.at.strftime('%m-%d %H:%M') }}</td><td>{{ l.email }}</td><td>{{ l.method }}</td><td>{{ l.ip }}</td></tr>{% else %}<tr><td colspan="4" class="muted">No sign-ins yet.</td></tr>{% endfor %}</tbody>
+    </table></div>
+  </section>
+  <section class="card admin-section">
+    <h2>Recent videos</h2>
+    <div class="table-wrap"><table class="data-table">
+      <thead><tr><th>When</th><th>User</th><th>Topic</th><th>Status</th></tr></thead>
+      <tbody>{% for j in jobs %}<tr title="{{ j.error }}"><td>{{ j.at.strftime('%m-%d %H:%M') }}</td><td>{{ j.email }}</td><td>{{ j.topic[:48] }}</td><td><span class="badge status-{{ j.status }}">{{ j.status }}</span></td></tr>{% else %}<tr><td colspan="4" class="muted">No videos yet.</td></tr>{% endfor %}</tbody>
+    </table></div>
+  </section>
+</div>
+{% endblock %}

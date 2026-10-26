@@ -427,6 +427,20 @@
     "OFox Upstream Vendor Help": "Nhà cung cấp thượng nguồn phục vụ việc tạo video OFox. BytePlus (quốc tế) là mặc định với chính sách nội dung nhất quán; Volcano Engine là nhà cung cấp Trung Quốc đại lục; Tự động để gateway OFox cân bằng tải giữa các nhà cung cấp.",
     "OFox Vendor BytePlus": "BytePlus (quốc tế, mặc định)",
     "OFox Vendor Volcengine": "Volcano Engine (Trung Quốc đại lục)",
-    "OFox Vendor Auto": "Tự động (gateway cân bằng tải)"
+    "OFox Vendor Auto": "Tự động (gateway cân bằng tải)",
+    "Publish Video": "Đăng lên {platforms}",
+    "Publish Video Help": "Đăng video hoàn chỉnh bằng cài đặt Upload-Post trong Cài đặt → Tự động đăng. Quyền riêng tư YouTube: {privacy}.",
+    "Publish Video Queued": "Đã bắt đầu đăng",
+    "Publishing Video": "Đang đăng lên {platforms}… Việc này có thể mất vài phút.",
+    "Publish Video Completed": "Đã đăng lên {platforms}.",
+    "Publish Video Failed": "Đăng thất bại: {error}",
+    "Publish Status Publishing": "Đang đăng…",
+    "Publish Status Published": "Đã đăng",
+    "Publish Status Failed": "Đăng thất bại",
+    "Scene Sync": "Scene Sync (cảnh khớp với từng câu)",
+    "Scene Sync Help": "Chia lời thuyết minh thành các cảnh theo thời gian nói thực tế, yêu cầu AI viết một truy vấn hình ảnh cho mỗi cảnh và dùng mô hình hình ảnh CLIP cục bộ để chọn đoạn video kho phù hợp nhất với nội dung đang nói. Mỗi đoạn được cắt theo độ dài câu của nó. Lần dùng đầu tiên sẽ tải một mô hình 150 MB.",
+    "Scene Sync Caption": "Cảnh được chọn theo từng câu; thời lượng đoạn quyết định độ dài mỗi cảnh quay.",
+    "Karaoke (Highlight Spoken Word)": "Karaoke (làm nổi bật từ đang đọc)",
+    "Highlight Color": "Màu làm nổi bật"
   }
 }

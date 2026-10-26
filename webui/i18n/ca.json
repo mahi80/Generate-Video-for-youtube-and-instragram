@@ -427,6 +427,20 @@
     "OFox Upstream Vendor Help": "Tria qui genera els vídeos a través d'OFox. BytePlus (internacional) és l'opció per defecte i aplica una política de contingut uniforme. Volcano Engine és el proveïdor de la Xina continental. L'opció automàtica reparteix les peticions entre proveïdors.",
     "OFox Vendor BytePlus": "BytePlus (internacional, per defecte)",
     "OFox Vendor Volcengine": "Volcano Engine (Xina continental)",
-    "OFox Vendor Auto": "Automàtic (repartiment de peticions)"
+    "OFox Vendor Auto": "Automàtic (repartiment de peticions)",
+    "Publish Video": "Publica a {platforms}",
+    "Publish Video Help": "Publica el vídeo acabat amb la configuració d'Upload-Post a Configuració → Publicació automàtica. Privadesa de YouTube: {privacy}.",
+    "Publish Video Queued": "S'ha iniciat la publicació",
+    "Publishing Video": "S'està publicant a {platforms}… Pot trigar uns minuts.",
+    "Publish Video Completed": "Publicat a {platforms}.",
+    "Publish Video Failed": "No s'ha pogut publicar: {error}",
+    "Publish Status Publishing": "S'està publicant…",
+    "Publish Status Published": "Publicat",
+    "Publish Status Failed": "Error de publicació",
+    "Scene Sync": "Scene Sync (imatges adequades a cada frase)",
+    "Scene Sync Help": "Divideix la locució en escenes segons els temps reals de la parla, demana a la IA una cerca visual per escena i fa servir un model d'imatge CLIP local per triar el clip d'estoc que millor encaixa amb el que es diu. Cada clip es retalla a la durada de la seva frase. El primer ús baixa un model de 150 MB.",
+    "Scene Sync Caption": "Les imatges es trien frase per frase; la durada del clip fixa la durada de cada pla.",
+    "Karaoke (Highlight Spoken Word)": "Karaoke (ressalta la paraula pronunciada)",
+    "Highlight Color": "Color de ressaltat"
   }
 }

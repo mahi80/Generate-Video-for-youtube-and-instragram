@@ -1,0 +1,30 @@
+<article class="job-card{{ ' job-big' if big }} status-{{ job.status }}" id="job-{{ job.id }}"
+  {% if not job.done %}hx-get="/videos/{{ job.id }}/card?big={{ 1 if big else 0 }}" hx-trigger="every 2s" hx-swap="outerHTML"{% endif %}>
+  {% if job.status == 'complete' %}
+  <video class="job-video {{ 'landscape' if job.aspect == '16:9' }}" controls preload="metadata" playsinline src="/videos/{{ job.id }}/file"></video>
+  {% endif %}
+  <div class="job-body">
+    <h3 class="job-topic">{{ job.topic }}</h3>
+    <p class="job-meta muted">{{ job.style }} · {{ job.created_at.strftime('%b %d, %H:%M') }}{% if job.duration %} · {{ job.duration | round | int }} s{% endif %}</p>
+    <p class="job-stage"><span class="msym" aria-hidden="true">{{ job.icon }}</span> {{ job.message }}</p>
+    {% if not job.done %}
+    <div class="progress" role="progressbar" aria-valuenow="{{ job.progress }}" aria-valuemin="0" aria-valuemax="100">
+      <div class="progress-bar" style="width: {{ [job.progress, 3] | max }}%"></div>
+    </div>
+    <p class="muted small">Usually ready in 3–6 minutes. You can leave this page; it will be in <a href="/videos">My videos</a>.</p>
+    {% elif job.status == 'complete' %}
+    <div class="row-actions">
+      <a class="btn btn-primary" href="/videos/{{ job.id }}/download"><span class="msym" aria-hidden="true">download</span> Download</a>
+      {% if big %}<a class="btn btn-secondary" href="/create"><span class="msym" aria-hidden="true">add</span> Make another</a>{% endif %}
+    </div>
+    {% else %}
+    <div class="row-actions">
+      <a class="btn btn-secondary" href="/create">Try again</a>
+    </div>
+    {% endif %}
+    {% if job.done and not big %}
+    <button type="button" class="btn btn-tertiary btn-sm danger" hx-post="/videos/{{ job.id }}/delete"
+      hx-target="#job-{{ job.id }}" hx-swap="outerHTML" hx-confirm="Delete this video?">Delete</button>
+    {% endif %}
+  </div>
+</article>

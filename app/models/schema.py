@@ -58,9 +58,9 @@ class ImageMotion(str, Enum):
     zoom = "zoom"
 
 
-SubtitleDisplayMode = Literal["sentence", "word_by_word"]
+SubtitleDisplayMode = Literal["sentence", "word_by_word", "karaoke"]
 SubtitleAnimation = Literal["none", "pop_spring"]
-_SUBTITLE_DISPLAY_MODES = ("sentence", "word_by_word")
+_SUBTITLE_DISPLAY_MODES = ("sentence", "word_by_word", "karaoke")
 _SUBTITLE_ANIMATIONS = ("none", "pop_spring")
 
 
@@ -119,6 +119,8 @@ class VideoParams(BaseModel):
     video_clip_duration: int = Field(default=5, ge=1)
     video_clip_speed: Optional[float] = 1.0
     match_materials_to_script: bool = False
+    # Scene Sync：按旁白逐句检索并用 CLIP 选择最贴合的库存素材。
+    scene_sync: bool = False
     video_count: int = Field(default=1, ge=1)
 
     video_source: Optional[str] = "pexels"
@@ -159,6 +161,8 @@ class VideoParams(BaseModel):
     text_fore_color: Optional[str] = "#FFFFFF"
     text_background_color: Union[bool, str] = False
     rounded_subtitle_background: bool = False
+    # 卡拉 OK 字幕中当前朗读单词的颜色。
+    subtitle_highlight_color: str = Field(default="#FFD60A", pattern=r"^#[0-9a-fA-F]{6}$")
 
     font_size: int = Field(default=60, ge=1)
     stroke_color: Optional[str] = "#000000"

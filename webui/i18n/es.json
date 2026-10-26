@@ -427,6 +427,20 @@
     "OFox Upstream Vendor Help": "Qué proveedor upstream sirve la generación de vídeo de OFox. BytePlus (internacional) es el predeterminado, con una política de contenido consistente; Volcano Engine es el proveedor de China continental; Auto deja que la pasarela de OFox balancee la carga entre proveedores.",
     "OFox Vendor BytePlus": "BytePlus (internacional, predeterminado)",
     "OFox Vendor Volcengine": "Volcano Engine (China continental)",
-    "OFox Vendor Auto": "Auto (balanceo de la pasarela)"
+    "OFox Vendor Auto": "Auto (balanceo de la pasarela)",
+    "Publish Video": "Publicar en {platforms}",
+    "Publish Video Help": "Publica el vídeo terminado con la configuración de Upload-Post en Ajustes → Publicación automática. Privacidad de YouTube: {privacy}.",
+    "Publish Video Queued": "Publicación iniciada",
+    "Publishing Video": "Publicando en {platforms}… Puede tardar unos minutos.",
+    "Publish Video Completed": "Publicado en {platforms}.",
+    "Publish Video Failed": "Error al publicar: {error}",
+    "Publish Status Publishing": "Publicando…",
+    "Publish Status Published": "Publicado",
+    "Publish Status Failed": "Error al publicar",
+    "Scene Sync": "Scene Sync (material acorde a cada frase)",
+    "Scene Sync Help": "Divide la locución en escenas según los tiempos reales del habla, pide a la IA una búsqueda visual por escena y usa un modelo de imagen CLIP local para elegir el clip de stock que mejor encaja con lo que se dice. Cada clip se recorta a la duración de su frase. El primer uso descarga un modelo de 150 MB.",
+    "Scene Sync Caption": "El material se elige por frase; la duración del clip fija la duración de cada plano.",
+    "Karaoke (Highlight Spoken Word)": "Karaoke (resaltar la palabra hablada)",
+    "Highlight Color": "Color de resaltado"
   }
 }

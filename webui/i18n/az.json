@@ -427,6 +427,20 @@
     "OFox Upstream Vendor Help": "OFox ilə video yaratmanı təmin edən əsas xidmət provayderi. BytePlus (beynəlxalq) vahid məzmun siyasəti olan standart provayderdir; Volcano Engine materik Çindəki provayderdir; avtomatik seçim OFox şlüzünə yükü provayderlər arasında tarazlaşdırmağa imkan verir.",
     "OFox Vendor BytePlus": "BytePlus (beynəlxalq, standart)",
     "OFox Vendor Volcengine": "Volcano Engine (materik Çin)",
-    "OFox Vendor Auto": "Avtomatik (şlüzdə yükün tarazlaşdırılması)"
+    "OFox Vendor Auto": "Avtomatik (şlüzdə yükün tarazlaşdırılması)",
+    "Publish Video": "{platforms} platformasında dərc et",
+    "Publish Video Help": "Hazır videonu Ayarlar → Avtomatik dərc bölməsindəki Upload-Post ayarları ilə dərc edir. YouTube məxfiliyi: {privacy}.",
+    "Publish Video Queued": "Dərc başladı",
+    "Publishing Video": "{platforms} platformasında dərc edilir… Bu bir neçə dəqiqə çəkə bilər.",
+    "Publish Video Completed": "{platforms} platformasında dərc edildi.",
+    "Publish Video Failed": "Dərc alınmadı: {error}",
+    "Publish Status Publishing": "Dərc edilir…",
+    "Publish Status Published": "Dərc edildi",
+    "Publish Status Failed": "Dərc alınmadı",
+    "Scene Sync": "Scene Sync (hər cümləyə uyğun görüntü)",
+    "Scene Sync Help": "Səsləndirməni real danışıq vaxtına görə səhnələrə bölür, süni intellektdən hər səhnə üçün vizual axtarış sorğusu yazmasını istəyir və deyilənə ən uyğun stok klipi seçmək üçün lokal CLIP şəkil modelindən istifadə edir. Hər klip öz cümləsinin müddətinə görə kəsilir. İlk istifadədə 150 MB-lıq model yüklənir.",
+    "Scene Sync Caption": "Görüntülər cümlə-cümlə seçilir; klip müddəti kadrın uzunluğunu müəyyən edir.",
+    "Karaoke (Highlight Spoken Word)": "Karaoke (deyilən sözü vurğula)",
+    "Highlight Color": "Vurğu rəngi"
   }
 }

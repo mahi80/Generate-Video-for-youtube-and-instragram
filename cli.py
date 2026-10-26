@@ -199,7 +199,7 @@ _SUBTITLE_POSITION_VALUES = (
 # 字幕展示模式与入场动画由 WebUI 保存进 [ui]。两者随「逐词字幕 + 弹跳动画」
 # 加入时只改了 WebUI 与模型字段默认值，命令行一直缺少开关。取值需与
 # app/models/schema.py 的 _SUBTITLE_DISPLAY_MODES / _SUBTITLE_ANIMATIONS 一致。
-_SUBTITLE_DISPLAY_MODE_VALUES = ("sentence", "word_by_word")
+_SUBTITLE_DISPLAY_MODE_VALUES = ("sentence", "word_by_word", "karaoke")
 _SUBTITLE_ANIMATION_VALUES = ("none", "pop_spring")
 
 
@@ -487,6 +487,15 @@ Batch manifests:
         ),
     )
     video_group.add_argument(
+        "--scene-sync",
+        default=None,
+        action=argparse.BooleanOptionalAction,
+        help=(
+            "pick a stock clip for every narrated sentence, ranked with a local "
+            "CLIP model (Pexels, Pixabay and Coverr only; default: disabled)"
+        ),
+    )
+    video_group.add_argument(
         "--n-threads",
         type=_positive_int,
         default=None,
@@ -699,6 +708,15 @@ Batch manifests:
             "use a rounded subtitle background (default: "
             "[ui].rounded_subtitle_background from config.toml; "
             "disabled when unset)"
+        ),
+    )
+    subtitle_group.add_argument(
+        "--subtitle-highlight-color",
+        type=_hex_color,
+        default=None,
+        help=(
+            "colour of the spoken word in karaoke subtitles, #RRGGBB "
+            "(default: [ui].subtitle_highlight_color from config.toml; #FFD60A when unset)"
         ),
     )
 
@@ -970,6 +988,7 @@ def build_video_params(args: argparse.Namespace) -> VideoParams:
         "video_clip_duration",
         "video_clip_speed",
         "match_materials_to_script",
+        "scene_sync",
         "n_threads",
         "voice_volume",
         "voice_rate",
@@ -989,6 +1008,7 @@ def build_video_params(args: argparse.Namespace) -> VideoParams:
         "stroke_color",
         "stroke_width",
         "rounded_subtitle_background",
+        "subtitle_highlight_color",
     ]
     for name in optional_arg_names:
         value = getattr(args, name)
@@ -1010,6 +1030,8 @@ def build_video_params(args: argparse.Namespace) -> VideoParams:
         ("text_fore_color", str, _hex_color),
         ("font_size", int, _positive_int),
         ("rounded_subtitle_background", bool, None),
+        ("scene_sync", bool, None),
+        ("subtitle_highlight_color", str, _hex_color),
         ("voice_volume", float, _non_negative_float),
         ("voice_rate", float, _positive_float),
         ("stroke_color", str, _hex_color),

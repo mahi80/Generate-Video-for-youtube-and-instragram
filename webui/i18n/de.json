@@ -427,6 +427,20 @@
     "OFox Upstream Vendor Help": "Welcher Upstream-Anbieter die OFox-Videogenerierung bedient. BytePlus (international) ist der Standard mit einheitlicher Inhaltsrichtlinie; Volcano Engine ist der Festland-China-Anbieter; Auto lässt das OFox-Gateway die Last über die Anbieter verteilen.",
     "OFox Vendor BytePlus": "BytePlus (international, Standard)",
     "OFox Vendor Volcengine": "Volcano Engine (Festlandchina)",
-    "OFox Vendor Auto": "Auto (Gateway-Lastverteilung)"
+    "OFox Vendor Auto": "Auto (Gateway-Lastverteilung)",
+    "Publish Video": "In {platforms} veröffentlichen",
+    "Publish Video Help": "Veröffentlicht das fertige Video mit den Upload-Post-Einstellungen unter Einstellungen → Auto-Veröffentlichung. YouTube-Sichtbarkeit: {privacy}.",
+    "Publish Video Queued": "Veröffentlichung gestartet",
+    "Publishing Video": "Wird in {platforms} veröffentlicht… Das kann einige Minuten dauern.",
+    "Publish Video Completed": "In {platforms} veröffentlicht.",
+    "Publish Video Failed": "Veröffentlichung fehlgeschlagen: {error}",
+    "Publish Status Publishing": "Wird veröffentlicht…",
+    "Publish Status Published": "Veröffentlicht",
+    "Publish Status Failed": "Veröffentlichung fehlgeschlagen",
+    "Scene Sync": "Scene Sync (Material passend zu jedem Satz)",
+    "Scene Sync Help": "Teilt den Sprechertext anhand des echten Sprech-Timings in Szenen, lässt die KI pro Szene einen Bildsuchbegriff schreiben und wählt mit einem lokalen CLIP-Bildmodell den Stock-Clip, der am besten zum Gesagten passt. Jeder Clip wird auf seinen Satz zugeschnitten. Bei der ersten Nutzung wird ein 150-MB-Modell heruntergeladen.",
+    "Scene Sync Caption": "Material wird pro Satz gewählt; die Clipdauer bestimmt die Schnittlänge.",
+    "Karaoke (Highlight Spoken Word)": "Karaoke (gesprochenes Wort hervorheben)",
+    "Highlight Color": "Hervorhebungsfarbe"
   }
 }

@@ -211,6 +211,7 @@ DEFAULT_SUBTITLE_SETTINGS = {
     "subtitle_background_enabled": False,
     "subtitle_background_color": "#000000",
     "rounded_subtitle_background": False,
+    "subtitle_highlight_color": "#FFD60A",
 }
 LOCAL_MATERIAL_EXTENSIONS = set(material_upload_service.SUPPORTED_MATERIAL_EXTENSIONS)
 CUSTOM_AUDIO_EXTENSIONS = {".mp3", ".wav", ".m4a", ".aac", ".flac", ".ogg"}
@@ -1643,6 +1644,7 @@ def _apply_restored_params(params):
     st.session_state["match_materials_to_script"] = bool(
         params.get("match_materials_to_script", False)
     )
+    st.session_state["scene_sync_checkbox"] = bool(params.get("scene_sync", False))
 
     # 音频设置。TTS server 未写入旧任务，根据历史 voice_name 推断。
     voice_name = params.get("voice_name") or voice.NO_VOICE_NAME
@@ -1707,6 +1709,10 @@ def _apply_restored_params(params):
         st.session_state["subtitle_background_color_picker"] = background_color
     st.session_state["rounded_subtitle_background_checkbox"] = bool(
         params.get("rounded_subtitle_background", False) and background_enabled
+    )
+    st.session_state["subtitle_highlight_color_picker"] = (
+        params.get("subtitle_highlight_color")
+        or DEFAULT_SUBTITLE_SETTINGS["subtitle_highlight_color"]
     )
 
     st.session_state.pop("local_video_materials_uploader", None)
@@ -2748,6 +2754,9 @@ def reset_subtitle_settings():
     st.session_state["rounded_subtitle_background_checkbox"] = defaults[
         "rounded_subtitle_background"
     ]
+    st.session_state["subtitle_highlight_color_picker"] = defaults[
+        "subtitle_highlight_color"
+    ]
 
     # 同步会持久化的 UI 选项，确保恢复后刷新页面仍保持默认设置。
     for key in (
@@ -2764,6 +2773,7 @@ def reset_subtitle_settings():
         "subtitle_background_enabled",
         "subtitle_background_color",
         "rounded_subtitle_background",
+        "subtitle_highlight_color",
     ):
         if key in defaults:
             _set_runtime_config("ui", key, defaults[key])
@@ -5492,6 +5502,21 @@ def _render_video_settings(panel, params):
                 "match_materials_to_script",
                 params.match_materials_to_script,
             )
+            if params.video_source in {"pexels", "pixabay", "coverr"}:
+                # Scene Sync 只适用于可检索的库存素材源：按旁白逐句检索，
+                # 并用 CLIP 比对预览图，为每句挑选最贴合的画面。
+                st.session_state.setdefault(
+                    "scene_sync_checkbox", _saved_ui_bool("scene_sync", False)
+                )
+                params.scene_sync = st.checkbox(
+                    tr("Scene Sync"),
+                    help=tr("Scene Sync Help"),
+                    key="scene_sync_checkbox",
+                )
+                _set_runtime_config("ui", "scene_sync", params.scene_sync)
+                if params.scene_sync:
+                    st.caption(tr("Scene Sync Caption"))
+
             # 顺序匹配开启时，sequential 是派生出的强制值，不应覆盖用户在关闭
             # 该功能时选择的拼接偏好；关闭后仍能恢复此前的 random/sequential。
             if not params.match_materials_to_script:
@@ -7930,6 +7955,7 @@ def _render_subtitle_settings(panel, params):
             subtitle_display_modes = [
                 (tr("Sentence by Sentence"), "sentence"),
                 (tr("Single Word (Word by Word)"), "word_by_word"),
+                (tr("Karaoke (Highlight Spoken Word)"), "karaoke"),
             ]
             saved_display_mode = config.ui.get(
                 "subtitle_display_mode",
@@ -7955,6 +7981,22 @@ def _render_subtitle_settings(panel, params):
             _set_runtime_config(
                 "ui", "subtitle_display_mode", params.subtitle_display_mode
             )
+            if params.subtitle_display_mode == "karaoke":
+                st.session_state.setdefault(
+                    "subtitle_highlight_color_picker",
+                    _saved_ui_color(
+                        "subtitle_highlight_color",
+                        DEFAULT_SUBTITLE_SETTINGS["subtitle_highlight_color"],
+                    ),
+                )
+                params.subtitle_highlight_color = st.color_picker(
+                    tr("Highlight Color"),
+                    key="subtitle_highlight_color_picker",
+                    disabled=subtitle_settings_disabled,
+                )
+                _set_runtime_config(
+                    "ui", "subtitle_highlight_color", params.subtitle_highlight_color
+                )
 
             # Subtitle Animation (None vs Pop Spring)
             subtitle_animations = [

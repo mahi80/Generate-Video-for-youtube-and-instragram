@@ -1,0 +1,16 @@
+<header class="saas-nav">
+  <a class="saas-brand" href="/create"><span class="msym" aria-hidden="true">movie</span> MoneyPrinterTurbo</a>
+  <nav class="saas-links" aria-label="Main">
+    <a href="/create" class="{{ 'is-active' if path.startswith('/create') }}">Create</a>
+    <a href="/videos" class="{{ 'is-active' if path.startswith('/videos') }}">My videos</a>
+    {% if user.role == 'admin' %}
+    <a href="/studio" class="{{ 'is-active' if path.startswith('/studio') }}">Studio</a>
+    <a href="/admin" class="{{ 'is-active' if path.startswith('/admin') }}">Admin</a>
+    {% endif %}
+  </nav>
+  <div class="saas-user">
+    {% if user.picture %}<img src="{{ user.picture }}" alt="" referrerpolicy="no-referrer">{% else %}<span class="avatar" aria-hidden="true">{{ user.name[:1] | upper }}</span>{% endif %}
+    <span class="saas-user-name">{{ user.name }}</span>
+    <a class="btn btn-secondary btn-sm" href="/logout">Sign out</a>
+  </div>
+</header>

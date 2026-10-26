@@ -1,0 +1,62 @@
+# SaaS mode: PostgreSQL (+ optionally the HTMX WebUI) in Docker.
+#
+# Database only, app running from your local .venv (recommended for development):
+#   docker compose -f docker-compose.saas.yml up -d postgres
+#   ./webui-htmx.sh            # with DATABASE_URL etc. set, see .env.saas.example
+#
+# Everything in Docker:
+#   docker compose -f docker-compose.saas.yml --env-file .env.saas up -d --build
+#
+# Ports are bound to 127.0.0.1 only. Put a reverse proxy with HTTPS in front
+# before exposing the app, or deploy to Azure (see infra/azure/README.md).
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-mpt}
+      POSTGRES_USER: ${POSTGRES_USER:-mpt}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mpt-local-dev-password}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-55432}:5432"
+    volumes:
+      - mpt-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-mpt} -d ${POSTGRES_DB:-mpt}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  app:
+    profiles: ["app"]
+    build:
+      context: .
+      args:
+        DOCKER_BUILD_MIRROR: default
+        PIP_USE_OFFICIAL: "1"
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: ["python", "-m", "webui_htmx", "--host", "0.0.0.0", "--port", "8510"]
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-mpt}:${POSTGRES_PASSWORD:-mpt-local-dev-password}@postgres:5432/${POSTGRES_DB:-mpt}
+      SESSION_SECRET: ${SESSION_SECRET:-}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      ADMIN_EMAILS: ${ADMIN_EMAILS:-}
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:8510}
+      DEV_LOGIN: ${DEV_LOGIN:-0}
+      # Ollama running on the Docker host (WSL/Windows).
+      OLLAMA_HOST: ${OLLAMA_HOST:-http://host.docker.internal:11434}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "127.0.0.1:8510:8510"
+    volumes:
+      - ./config.toml:/MoneyPrinterTurbo/config.toml
+      - ./storage:/MoneyPrinterTurbo/storage
+
+volumes:
+  mpt-postgres:

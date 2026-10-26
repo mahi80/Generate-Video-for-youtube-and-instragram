@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>{% block title %}Create videos{% endblock %} · MoneyPrinterTurbo</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>">
+  <link rel="stylesheet" href="/static/app.css">
+  <link rel="stylesheet" href="/static/saas.css">
+  <script src="/static/vendor/htmx.min.js"></script>
+</head>
+<body class="saas">
+  <div id="busy" class="busy" aria-hidden="true"></div>
+  {% if user %}{% include "nav.html" %}{% endif %}
+  <main class="saas-main">{% block content %}{% endblock %}</main>
+  <script>
+    document.body.addEventListener("htmx:beforeRequest", function () { document.getElementById("busy").classList.add("htmx-request"); });
+    document.body.addEventListener("htmx:afterRequest", function () { document.getElementById("busy").classList.remove("htmx-request"); });
+  </script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

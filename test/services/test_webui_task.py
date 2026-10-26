@@ -364,6 +364,7 @@ def test_terminal_task_renders_subject_named_video_download(
             if key == "Batch Material Reuse Warning" else key
         ),
         "_render_generation_logs": lambda _task_id: None,
+        "_render_publish_controls": lambda _task_id, _task: None,
     }
     module = ast.fix_missing_locations(ast.Module(body=selected_nodes, type_ignores=[]))
     exec(compile(module, str(WEBUI_MAIN), "exec"), namespace)

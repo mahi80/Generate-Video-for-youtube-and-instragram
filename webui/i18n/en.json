@@ -640,6 +640,11 @@
     "Publish Video Failed": "Publishing failed: {error}",
     "Publish Status Publishing": "Publishing…",
     "Publish Status Published": "Published",
-    "Publish Status Failed": "Publish failed"
+    "Publish Status Failed": "Publish failed",
+    "Scene Sync": "Scene Sync (match footage to each sentence)",
+    "Scene Sync Help": "Splits the voiceover into scenes using the real speech timing, asks the AI for a visual search per scene, and uses a local CLIP image model to pick the stock clip that best matches what is being said. Each clip is cut to its sentence. The first use downloads a 150 MB model.",
+    "Scene Sync Caption": "Footage is chosen per sentence; clip duration sets the shot length.",
+    "Karaoke (Highlight Spoken Word)": "Karaoke (highlight spoken word)",
+    "Highlight Color": "Highlight color"
   }
 }

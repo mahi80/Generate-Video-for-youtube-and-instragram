@@ -8,13 +8,15 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
   <link rel="stylesheet" href="/static/vendor/driver.css">
   <link rel="stylesheet" href="/static/app.css">
+  {% if nav %}<link rel="stylesheet" href="/static/saas.css">{% endif %}
   <script src="/static/vendor/htmx.min.js"></script>
   <script src="/static/vendor/idiomorph-ext.min.js"></script>
   <script src="/static/vendor/driver.js.iife.js"></script>
   <script src="/static/app.js" defer></script>
 </head>
-<body hx-ext="morph" data-sid="{{ sid }}">
+<body hx-ext="morph" data-sid="{{ sid }}"{% if nav %} class="studio-with-nav"{% endif %}>
   <div id="busy" class="busy" aria-hidden="true"></div>
+  {{ nav | safe }}
   {{ app | safe }}
   {{ toasts | safe }}
 </body>

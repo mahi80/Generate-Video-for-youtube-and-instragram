@@ -427,6 +427,20 @@
     "OFox Upstream Vendor Help": "Vendor upstream yang melayani pembuatan video OFox. BytePlus (internasional) adalah bawaan dengan kebijakan konten yang konsisten; Volcano Engine adalah vendor Tiongkok daratan; Auto membiarkan gateway OFox menyeimbangkan beban antar vendor.",
     "OFox Vendor BytePlus": "BytePlus (internasional, bawaan)",
     "OFox Vendor Volcengine": "Volcano Engine (Tiongkok daratan)",
-    "OFox Vendor Auto": "Otomatis (penyeimbangan gateway)"
+    "OFox Vendor Auto": "Otomatis (penyeimbangan gateway)",
+    "Publish Video": "Terbitkan ke {platforms}",
+    "Publish Video Help": "Menerbitkan video jadi dengan pengaturan Upload-Post di Pengaturan → Terbit Otomatis. Privasi YouTube: {privacy}.",
+    "Publish Video Queued": "Penerbitan dimulai",
+    "Publishing Video": "Menerbitkan ke {platforms}… Ini bisa memakan waktu beberapa menit.",
+    "Publish Video Completed": "Diterbitkan ke {platforms}.",
+    "Publish Video Failed": "Gagal menerbitkan: {error}",
+    "Publish Status Publishing": "Menerbitkan…",
+    "Publish Status Published": "Diterbitkan",
+    "Publish Status Failed": "Gagal menerbitkan",
+    "Scene Sync": "Scene Sync (footage sesuai tiap kalimat)",
+    "Scene Sync Help": "Membagi narasi menjadi adegan berdasarkan waktu bicara yang sebenarnya, meminta AI menulis kueri pencarian visual per adegan, lalu memakai model gambar CLIP lokal untuk memilih klip stok yang paling cocok dengan yang diucapkan. Setiap klip dipotong sesuai durasi kalimatnya. Penggunaan pertama mengunduh model 150 MB.",
+    "Scene Sync Caption": "Footage dipilih per kalimat; durasi klip menentukan panjang tiap shot.",
+    "Karaoke (Highlight Spoken Word)": "Karaoke (sorot kata yang diucapkan)",
+    "Highlight Color": "Warna sorotan"
   }
 }

@@ -427,6 +427,20 @@
     "OFox Upstream Vendor Help": "OFox video üretimini hangi üst akış sağlayıcısının sunacağı. BytePlus (uluslararası) tutarlı içerik politikasıyla varsayılandır; Volcano Engine Çin anakarası sağlayıcısıdır; Otomatik, OFox ağ geçidinin yükü sağlayıcılar arasında dengelemesine izin verir.",
     "OFox Vendor BytePlus": "BytePlus (uluslararası, varsayılan)",
     "OFox Vendor Volcengine": "Volcano Engine (Çin anakarası)",
-    "OFox Vendor Auto": "Otomatik (ağ geçidi yük dengeleme)"
+    "OFox Vendor Auto": "Otomatik (ağ geçidi yük dengeleme)",
+    "Publish Video": "{platforms} üzerinde yayınla",
+    "Publish Video Help": "Bitmiş videoyu Ayarlar → Otomatik Yayınlama altındaki Upload-Post ayarlarıyla yayınlar. YouTube gizliliği: {privacy}.",
+    "Publish Video Queued": "Yayınlama başladı",
+    "Publishing Video": "{platforms} üzerinde yayınlanıyor… Bu birkaç dakika sürebilir.",
+    "Publish Video Completed": "{platforms} üzerinde yayınlandı.",
+    "Publish Video Failed": "Yayınlama başarısız: {error}",
+    "Publish Status Publishing": "Yayınlanıyor…",
+    "Publish Status Published": "Yayınlandı",
+    "Publish Status Failed": "Yayınlama başarısız",
+    "Scene Sync": "Scene Sync (her cümleye uygun görüntü)",
+    "Scene Sync Help": "Seslendirmeyi gerçek konuşma zamanlamasına göre sahnelere böler, yapay zekadan her sahne için görsel bir arama sorgusu ister ve söylenenle en iyi eşleşen stok klibi seçmek için yerel bir CLIP görüntü modeli kullanır. Her klip kendi cümlesinin süresine göre kesilir. İlk kullanımda 150 MB'lık bir model indirilir.",
+    "Scene Sync Caption": "Görüntüler cümle cümle seçilir; klip süresi çekim uzunluğunu belirler.",
+    "Karaoke (Highlight Spoken Word)": "Karaoke (söylenen kelimeyi vurgula)",
+    "Highlight Color": "Vurgu rengi"
   }
 }

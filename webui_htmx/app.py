@@ -30,13 +30,14 @@ sys.modules["streamlit"] = stshim
 sys.modules["streamlit_tour"] = tour_shim
 
 from fastapi import FastAPI, HTTPException, Request  # noqa: E402
-from fastapi.responses import FileResponse, HTMLResponse, Response  # noqa: E402
+from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse, Response  # noqa: E402
 from fastapi.staticfiles import StaticFiles  # noqa: E402
 from jinja2 import Environment, FileSystemLoader, select_autoescape  # noqa: E402
 from starlette.concurrency import run_in_threadpool  # noqa: E402
 
 from webui_htmx import render  # noqa: E402
 from webui_htmx import runtime as rt  # noqa: E402
+from webui_htmx.saas.settings import settings as saas_settings  # noqa: E402
 
 PACKAGE_DIR = os.path.dirname(os.path.realpath(__file__))
 SESSION_HEADER = "x-mpt-session"
@@ -51,6 +52,28 @@ templates = Environment(
 
 app = FastAPI(title="MoneyPrinterTurbo WebUI", docs_url=None, redoc_url=None, openapi_url=None)
 app.mount("/static", StaticFiles(directory=os.path.join(PACKAGE_DIR, "static")), name="static")
+
+if saas_settings.enabled:
+    # SaaS 模式：Google 登录、用户追踪、引导式创建页面与管理后台。
+    from starlette.middleware.sessions import SessionMiddleware
+
+    from webui_htmx.saas import auth as saas_auth
+    from webui_htmx.saas import pages as saas_pages
+    from webui_htmx.saas.migrate import upgrade_database
+
+    upgrade_database()
+    app.include_router(saas_auth.router)
+    app.include_router(saas_pages.router)
+    # 后添加的中间件在外层：会话中间件必须先于登录校验解析 Cookie。
+    app.add_middleware(saas_auth.AuthGate)
+    app.add_middleware(
+        SessionMiddleware,
+        secret_key=saas_settings.session_secret,
+        session_cookie="mpt_session",
+        max_age=14 * 24 * 3600,
+        same_site="lax",
+        https_only=saas_settings.secure_cookies,
+    )
 
 
 def _bind_request(session: rt.Session, request: Request) -> rt.Session:
@@ -70,12 +93,26 @@ def _expired() -> Response:
     return Response(status_code=200, headers=RELOAD_HEADERS)
 
 
-def _full_page(session: rt.Session) -> str:
+def _nav_html(request: Request) -> str:
+    """The SaaS navigation bar shown above the Studio (empty in local mode)."""
+    if not saas_settings.enabled:
+        return ""
+    from webui_htmx.saas.auth import current_user
+    from webui_htmx.saas.pages import templates as saas_templates
+
+    user = current_user(request)
+    if not user:
+        return ""
+    return saas_templates.get_template("nav.html").render(user=user, path=request.url.path)
+
+
+def _full_page(session: rt.Session, nav: str = "") -> str:
     with session.lock:
         run = rt.full_run(session)
         return templates.get_template("page.html").render(
             title=run.page_title,
             sid=session.sid,
+            nav=nav,
             app=render.app_html(run),
             toasts=render.toasts_html(run),
         )
@@ -90,8 +127,16 @@ def _full_app(session: rt.Session, form=None, extra_toasts=()) -> tuple[str, dic
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
+    if saas_settings.enabled:
+        # SaaS 模式下首页是引导式创建；完整编辑器在 /studio，仅管理员可用。
+        return RedirectResponse("/create", status_code=303)
+    return await studio(request)
+
+
+@app.get("/studio", response_class=HTMLResponse)
+async def studio(request: Request):
     session = _bind_request(rt.new_session(), request)
-    body = await run_in_threadpool(_full_page, session)
+    body = await run_in_threadpool(_full_page, session, _nav_html(request))
     return HTMLResponse(body, headers={"Cache-Control": "no-store"})
 
 

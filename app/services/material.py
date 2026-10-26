@@ -425,6 +425,8 @@ def search_videos_pexels(
                     ),
                     "source_page": _safe_public_url(v.get("url")),
                     "creator": _creator_info(v.get("user")),
+                    # Scene Sync 用预览图给候选素材打分，无需先下载视频。
+                    "preview_image": _safe_public_url(v.get("image")),
                     "rendition": {
                         "id": (
                             str(video.get("id"))
@@ -569,6 +571,7 @@ def search_videos_pixabay(
                                 "name": v.get("user"),
                             }
                         ),
+                        "preview_image": _safe_public_url(video.get("thumbnail")),
                         "rendition": {
                             "id": video_type,
                             "width": w,
@@ -687,6 +690,9 @@ def search_videos_coverr(
                 "asset_id": str(video_id),
                 "source_page": _safe_public_url(v.get("canonical_url") or v.get("url")),
                 "creator": _creator_info(v.get("creator") or v.get("author")),
+                "preview_image": _safe_public_url(
+                    v.get("thumbnail") or v.get("poster")
+                ),
                 "rendition": {
                     "id": "mp4_download",
                     "width": v.get("max_width"),

@@ -228,8 +228,47 @@ You should see your profile name and the connected platforms.
 
 ---
 
+## Multi-user SaaS mode (Google sign-in, PostgreSQL)
+
+The HTMX interface can also run as a multi-user web app:
+
+- **Sign-in:** with Google (or a developer email login for local testing).
+- **Tracking:** every user, sign-in and video is recorded in PostgreSQL.
+- **Regular users:** get a simple 4-step **Create** wizard (topic → style and voice → script → video) and **My videos**. They never see API keys.
+- **Admins** (emails in `ADMIN_EMAILS`): also get the full **Studio**, **Settings** and an **Admin** dashboard with users, sign-ins and videos.
+
+### Run it locally
+
+1. Start PostgreSQL in Docker. It listens on `127.0.0.1:55432`:
+   ```bash
+   docker compose -f docker-compose.saas.yml up -d postgres
+   ```
+2. Create your settings file:
+   ```bash
+   cp .env.saas.example .env.saas
+   nano .env.saas        # set SESSION_SECRET, ADMIN_EMAILS; DEV_LOGIN=1 for local testing
+   ```
+3. Start the app with those settings:
+   ```bash
+   set -a; . ./.env.saas; set +a; ./webui-htmx.sh
+   ```
+4. Open <http://localhost:8510>. You'll see the sign-in page. Database tables are created automatically on the first start.
+
+To use **Continue with Google**, create an OAuth client in Google Cloud. The steps are in [infra/azure/README.md, step 4](infra/azure/README.md#4-set-up-google-sign-in). Use the redirect URI `http://localhost:8510/auth/google/callback` locally.
+
+Without `DATABASE_URL`, the app stays in single-user mode with no login, as described above.
+
+### Deploy to Azure
+
+[infra/azure/README.md](infra/azure/README.md) walks through deploying to **Azure Container Apps** with **Azure Database for PostgreSQL** and **Azure Files**, using one Bicep template.
+
+---
+
 ## Tips for better Shorts and Reels
 
+- Turn on **Scene Sync (match footage to each sentence)** under **Video Settings**. Instead of a few keywords for the whole video, the app picks a clip for every sentence: the AI writes a visual search per scene, and a local CLIP image model checks each stock clip's preview against what is being said. Cuts land on sentence boundaries. The first use downloads a 150 MB model.
+- Set **Subtitle display** to **Karaoke (highlight spoken word)** for Shorts-style captions: 2–3 words at a time with the spoken word in a highlight colour. A font size around 75 and outline width around 3 read well on phones.
+- Try the more natural **Multilingual** voices: `en-US-AndrewMultilingualNeural` or `en-US-AvaMultilingualNeural`, at speed 1.1×.
 - Keep videos **under 60 seconds**. Under **Advanced Script Settings**, set paragraphs to 1–2.
 - Use **Custom Script Requirements** to set the style, e.g. `Hook in the first sentence, casual tone, end with a question`.
 - If the footage doesn't match the script well, edit the **Video Keywords** box. Short English terms such as `ocean waves` or `deep sea fish` work best.

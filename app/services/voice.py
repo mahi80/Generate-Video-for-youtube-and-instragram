@@ -36,6 +36,8 @@ from app.utils.subtitle_reader import moviepy_subtitles
 from app.utils.subtitle_writer import staged_subtitle_file
 
 _DEFAULT_EDGE_TTS_TIMEOUT_SECONDS = 30.0
+# 长文案持续返回数据时允许的总时长 = 空闲超时 × 该系数（默认 5 分钟）。
+_EDGE_TTS_TOTAL_TIMEOUT_FACTOR = 10
 _SILICONFLOW_TTS_TIMEOUT_SECONDS = (10, 300)  # connect, read
 _MIMO_DEFAULT_BASE_URL = "https://api.xiaomimimo.com/v1"
 _MIMO_DEFAULT_TTS_MODEL = "mimo-v2.5-tts"
@@ -1456,13 +1458,24 @@ def _stream_edge_tts_sync_with_timeout(
     thread = threading.Thread(target=_produce_chunks, daemon=True)
     thread.start()
 
-    deadline = time.monotonic() + timeout_seconds
+    # 超时按“空闲时间”计算：只要服务端仍在持续返回音频就继续等待，长文案
+    # 在较慢网络下不会因为总时长超过 timeout 而失败；真正卡住（timeout 秒内
+    # 没有任何数据）时仍会及时放弃。另设总时长上限，防止流永远不结束。
+    started_at = time.monotonic()
+    hard_deadline = started_at + timeout_seconds * _EDGE_TTS_TOTAL_TIMEOUT_FACTOR
+    deadline = started_at + timeout_seconds
     try:
         while True:
-            remaining_seconds = deadline - time.monotonic()
+            now = time.monotonic()
+            remaining_seconds = min(deadline, hard_deadline) - now
             if remaining_seconds <= 0:
+                if now >= hard_deadline:
+                    raise TimeoutError(
+                        "edge_tts stream did not finish within "
+                        f"{timeout_seconds * _EDGE_TTS_TOTAL_TIMEOUT_FACTOR:g}s"
+                    )
                 raise TimeoutError(
-                    f"edge_tts stream timed out after {timeout_seconds:g}s"
+                    f"edge_tts stream timed out after {timeout_seconds:g}s without data"
                 )
             try:
                 item_type, payload = stream_queue.get(
@@ -1471,6 +1484,7 @@ def _stream_edge_tts_sync_with_timeout(
             except queue.Empty:
                 continue
             if item_type == "chunk":
+                deadline = time.monotonic() + timeout_seconds
                 on_chunk(payload)
             elif item_type == "error":
                 raise payload

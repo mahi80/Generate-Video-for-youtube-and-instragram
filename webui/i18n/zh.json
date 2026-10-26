@@ -640,6 +640,11 @@
     "Publish Video Failed": "发布失败：{error}",
     "Publish Status Publishing": "发布中…",
     "Publish Status Published": "已发布",
-    "Publish Status Failed": "发布失败"
+    "Publish Status Failed": "发布失败",
+    "Scene Sync": "逐句配画（按每句旁白匹配素材）",
+    "Scene Sync Help": "根据真实配音时间轴把旁白切分为场景，让大模型为每个场景生成画面检索词，并用本地 CLIP 图像模型挑选与当前句子最贴合的库存素材，每段素材按句子时长裁剪。首次使用会下载约 150 MB 的模型。",
+    "Scene Sync Caption": "素材按句挑选；片段时长决定镜头节奏。",
+    "Karaoke (Highlight Spoken Word)": "卡拉 OK（高亮当前朗读的词）",
+    "Highlight Color": "高亮颜色"
   }
 }

@@ -25,3 +25,10 @@ socksio==1.0.0
 pydub==0.25.1
 audioop-lts==0.2.2; python_version >= "3.13"
 litellm==1.86.2
+# HTMX WebUI and SaaS mode (Google sign-in, PostgreSQL)
+jinja2>=3.1
+markdown-it-py>=3.0
+sqlalchemy>=2.0
+psycopg[binary]>=3.2
+alembic>=1.13
+authlib>=1.3

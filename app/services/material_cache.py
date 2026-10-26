@@ -74,10 +74,14 @@ def _cached_source_info(item: MaterialInfo) -> dict | None:
     }
     asset_id = source.get("asset_id")
     source_page = _safe_public_url(source.get("source_page"))
+    preview_image = _safe_public_url(source.get("preview_image"))
     if asset_id not in (None, ""):
         cached["asset_id"] = str(asset_id)
     if source_page:
         cached["source_page"] = source_page
+    if preview_image:
+        # Scene Sync 用公开预览图给缓存命中的候选素材打分。
+        cached["preview_image"] = preview_image
 
     raw_creator = source.get("creator")
     if isinstance(raw_creator, dict):

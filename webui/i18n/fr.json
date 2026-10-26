@@ -427,6 +427,20 @@
     "OFox Upstream Vendor Help": "Fournisseur amont utilisé pour la génération vidéo OFox. BytePlus (international) est la valeur par défaut, avec une politique de contenu cohérente ; Volcano Engine est le fournisseur de Chine continentale ; Auto laisse la passerelle OFox répartir la charge entre les fournisseurs.",
     "OFox Vendor BytePlus": "BytePlus (international, défaut)",
     "OFox Vendor Volcengine": "Volcano Engine (Chine continentale)",
-    "OFox Vendor Auto": "Auto (répartition par la passerelle)"
+    "OFox Vendor Auto": "Auto (répartition par la passerelle)",
+    "Publish Video": "Publier sur {platforms}",
+    "Publish Video Help": "Publie la vidéo terminée avec les réglages Upload-Post dans Paramètres → Publication automatique. Confidentialité YouTube : {privacy}.",
+    "Publish Video Queued": "Publication lancée",
+    "Publishing Video": "Publication sur {platforms}… Cela peut prendre quelques minutes.",
+    "Publish Video Completed": "Publié sur {platforms}.",
+    "Publish Video Failed": "Échec de la publication : {error}",
+    "Publish Status Publishing": "Publication…",
+    "Publish Status Published": "Publié",
+    "Publish Status Failed": "Échec de la publication",
+    "Scene Sync": "Scene Sync (images adaptées à chaque phrase)",
+    "Scene Sync Help": "Découpe la voix off en scènes d'après le minutage réel de la parole, demande à l'IA une recherche visuelle par scène et utilise un modèle d'image CLIP local pour choisir le clip de banque d'images qui correspond le mieux à ce qui est dit. Chaque clip est coupé à la durée de sa phrase. La première utilisation télécharge un modèle de 150 Mo.",
+    "Scene Sync Caption": "Les images sont choisies phrase par phrase ; la durée des clips fixe la longueur des plans.",
+    "Karaoke (Highlight Spoken Word)": "Karaoké (surligner le mot prononcé)",
+    "Highlight Color": "Couleur de surbrillance"
   }
 }
