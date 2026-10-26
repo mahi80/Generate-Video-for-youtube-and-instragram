@@ -1,0 +1,314 @@
+/* Creator theme for the SaaS pages: dark, neon gradients, glass cards. Loads after saas.css. */
+
+body.saas {
+  --bg: #0b0614;
+  --surface: rgba(255, 255, 255, .055);
+  --surface-2: rgba(255, 255, 255, .09);
+  --surface-3: rgba(255, 255, 255, .14);
+  --text: #f7f3ff;
+  --text-2: #bdb5d6;
+  --text-3: #8d86a8;
+  --border: rgba(255, 255, 255, .11);
+  --border-strong: rgba(255, 255, 255, .2);
+  --primary: #ff4fd8;
+  --primary-hover: #ff73e0;
+  --primary-soft: rgba(255, 79, 216, .14);
+  --accent: #2ee6ff;
+  --lime: #b4ff4a;
+  --focus: #2ee6ff;
+  --link: #8fe9ff;
+  --grad: linear-gradient(115deg, #ff4fd8 0%, #ff8a3d 55%, #ffe14d 100%);
+  --grad-cool: linear-gradient(115deg, #7c5cff 0%, #2ee6ff 100%);
+  --info-bg: rgba(46, 230, 255, .12);
+  --info-fg: #9ff1ff;
+  --warning-bg: rgba(255, 196, 61, .14);
+  --warning-fg: #ffd77a;
+  --error-bg: rgba(255, 77, 109, .15);
+  --error-fg: #ff9db0;
+  --success-bg: rgba(180, 255, 74, .13);
+  --success-fg: #c8ff7a;
+  --shadow: 0 8px 30px rgba(0, 0, 0, .35);
+  --shadow-lg: 0 24px 60px rgba(0, 0, 0, .55);
+  --radius: 22px;
+  --radius-sm: 14px;
+  --display: "Space Grotesk", "Inter", system-ui, sans-serif;
+  --font: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  color-scheme: dark;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  overflow-x: hidden;
+}
+
+/* Glowing gradient blobs behind everything */
+body.saas::before,
+body.saas::after {
+  content: "";
+  position: fixed;
+  z-index: -1;
+  width: 60vmax;
+  height: 60vmax;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: .5;
+  pointer-events: none;
+  animation: drift 22s ease-in-out infinite alternate;
+}
+body.saas::before {
+  top: -25vmax; left: -15vmax;
+  background: radial-gradient(circle, #7c3aed 0%, transparent 65%);
+}
+body.saas::after {
+  bottom: -30vmax; right: -20vmax;
+  background: radial-gradient(circle, #ff4fd8 0%, #ff8a3d 35%, transparent 65%);
+  animation-delay: -11s;
+}
+@keyframes drift {
+  from { transform: translate(0, 0) scale(1); }
+  to { transform: translate(6vmax, 4vmax) scale(1.12); }
+}
+
+body.saas h1,
+body.saas h2,
+body.saas h3,
+body.saas .saas-brand,
+body.saas .plan-price .amount,
+body.saas .metric-value {
+  font-family: var(--display);
+  letter-spacing: -.02em;
+}
+
+.grad-text {
+  background: var(--grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Navigation */
+body.saas .saas-nav {
+  background: rgba(11, 6, 20, .6);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(16px) saturate(140%);
+}
+body.saas .saas-brand { font-size: 18px; font-weight: 700; }
+body.saas .saas-brand .msym {
+  background: var(--grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+body.saas .saas-links a { border-radius: 999px; font-weight: 600; }
+body.saas .saas-links a.is-active {
+  background: var(--surface-2);
+  color: var(--text);
+  box-shadow: inset 0 0 0 1px var(--border-strong);
+}
+body.saas .saas-user .avatar { background: var(--grad); color: #1a0b25; }
+body.saas .saas-user img { box-shadow: 0 0 0 2px #ff4fd8; }
+
+/* Glass surfaces */
+body.saas .card,
+body.saas .step,
+body.saas .job-card,
+body.saas .plan-card,
+body.saas .login-card,
+body.saas .usage-meter,
+body.saas .faq details,
+body.saas .metric {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(18px) saturate(140%);
+  box-shadow: var(--shadow);
+}
+body.saas .step { border-radius: 26px; }
+
+/* Buttons */
+body.saas .btn {
+  border-radius: 999px;
+  background: var(--surface-2);
+  border-color: var(--border-strong);
+  color: var(--text);
+  font-weight: 650;
+  transition: transform .15s cubic-bezier(.3, 1.6, .5, 1), box-shadow .2s, background .2s;
+}
+body.saas .btn:hover { transform: translateY(-2px); color: var(--text); border-color: var(--text-2); }
+body.saas .btn:active { transform: translateY(0) scale(.97); }
+body.saas .btn-primary {
+  background: var(--grad);
+  border: 0;
+  color: #1a0b25;
+  box-shadow: 0 10px 30px rgba(255, 79, 216, .35);
+}
+body.saas .btn-primary:hover {
+  background: var(--grad);
+  color: #1a0b25;
+  box-shadow: 0 14px 40px rgba(255, 79, 216, .5), 0 0 0 4px rgba(255, 138, 61, .18);
+}
+body.saas .btn-tertiary { background: transparent; border-color: transparent; color: var(--link); }
+body.saas .btn-xl { font-size: 18px; padding: 16px 32px; }
+body.saas .btn-google {
+  background: #fff;
+  color: #1f1f1f;
+  border: 0;
+  border-radius: 999px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .35);
+  transition: transform .15s cubic-bezier(.3, 1.6, .5, 1), box-shadow .2s;
+}
+body.saas .btn-google:hover { transform: translateY(-2px); background: #fff; box-shadow: 0 16px 40px rgba(255, 79, 216, .35); }
+
+/* Inputs */
+body.saas input[type=text],
+body.saas input[type=email],
+body.saas input[type=password],
+body.saas textarea,
+body.saas select {
+  background: rgba(255, 255, 255, .06);
+  border: 1px solid var(--border-strong);
+  border-radius: 16px;
+  color: var(--text);
+}
+body.saas textarea::placeholder, body.saas input::placeholder { color: var(--text-3); }
+body.saas textarea:focus-visible,
+body.saas input:focus-visible,
+body.saas select:focus-visible {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px rgba(46, 230, 255, .18);
+}
+body.saas option { background: #1a1029; color: var(--text); }
+
+/* Wizard */
+body.saas .wizard-head h1 { font-size: clamp(30px, 5vw, 46px); line-height: 1.05; }
+body.saas .step-num {
+  background: var(--grad);
+  color: #1a0b25;
+  font-family: var(--display);
+  box-shadow: 0 0 24px rgba(255, 79, 216, .45);
+}
+body.saas .step-body h2 { font-size: 22px; }
+body.saas .step-body h3 { color: var(--text-2); letter-spacing: .08em; }
+body.saas .chip-btn {
+  background: var(--surface-2);
+  border-color: var(--border-strong);
+  color: var(--text);
+  transition: transform .15s cubic-bezier(.3, 1.6, .5, 1), border-color .15s;
+}
+body.saas .chip-btn:hover { transform: translateY(-2px) rotate(-1deg); border-color: var(--accent); color: var(--accent); }
+
+body.saas .pill > span,
+body.saas .choice-card {
+  background: var(--surface);
+  border: 1.5px solid var(--border-strong);
+  border-radius: 18px;
+}
+body.saas .choice-card {
+  transition: transform .18s cubic-bezier(.3, 1.6, .5, 1), border-color .15s, box-shadow .2s;
+}
+body.saas .choice-card:hover { transform: translateY(-3px) rotate(-.4deg); border-color: var(--accent); }
+body.saas .pill:hover > span { border-color: var(--accent); }
+body.saas .choice-card:has(input:checked),
+body.saas .pill input:checked + span {
+  border-color: transparent;
+  background:
+    linear-gradient(#1a0f2b, #1a0f2b) padding-box,
+    var(--grad) border-box;
+  border: 2px solid transparent;
+  box-shadow: 0 0 28px rgba(255, 79, 216, .3);
+}
+body.saas .choice-card:has(input:checked)::after {
+  color: #ffe14d;
+}
+body.saas .choice-icon {
+  font-size: 32px;
+  background: var(--grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+body.saas .play-btn { background: var(--surface-2); color: var(--text); border-color: var(--border-strong); }
+body.saas .play-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+/* Progress */
+body.saas .progress { background: rgba(255, 255, 255, .1); height: 10px; }
+body.saas .progress-bar {
+  background: var(--grad);
+  background-size: 200% 100%;
+  animation: shimmer 2.2s linear infinite;
+  box-shadow: 0 0 18px rgba(255, 138, 61, .55);
+}
+@keyframes shimmer { from { background-position: 0 0; } to { background-position: 200% 0; } }
+
+/* Jobs */
+body.saas .job-card { border-radius: 24px; }
+body.saas .job-card.job-big { background: transparent; border: 0; box-shadow: none; backdrop-filter: none; }
+body.saas .job-video { border-radius: 20px; box-shadow: 0 20px 50px rgba(0, 0, 0, .5); }
+body.saas .job-card.status-complete .job-stage { color: var(--lime); }
+body.saas .job-stage { font-size: 15.5px; }
+
+/* Stickers and badges */
+.sticker {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--lime);
+  color: #172400;
+  font-weight: 800;
+  font-size: 13px;
+  transform: rotate(-3deg);
+  box-shadow: 0 6px 18px rgba(180, 255, 74, .3);
+}
+body.saas .plan-badge {
+  background: var(--lime);
+  color: #172400;
+  transform: rotate(-3deg);
+  box-shadow: 0 6px 18px rgba(180, 255, 74, .35);
+}
+body.saas .badge { background: var(--surface-2); color: var(--text-2); }
+body.saas .badge-admin { background: var(--primary-soft); color: #ffb3ef; }
+
+/* Login */
+body.saas .login-card { border-radius: 30px; padding: 40px 32px; }
+body.saas .login-card h1 { font-size: 34px; line-height: 1.08; }
+body.saas .login-logo {
+  font-size: 56px;
+  background: var(--grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.login-perks { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+.login-perks span {
+  padding: 5px 11px; border-radius: 999px; font-size: 12.5px; font-weight: 600;
+  background: var(--surface-2); border: 1px solid var(--border);
+}
+
+/* Pricing */
+body.saas .pricing-hero h1 { font-size: clamp(32px, 6vw, 54px); line-height: 1.04; }
+body.saas .billing-toggle { background: var(--surface); }
+body.saas .billing-toggle input:checked + span { background: var(--grad); color: #1a0b25; }
+body.saas .billing-toggle input:checked + span em { color: #1a0b25; }
+body.saas .plan-card { border-radius: 26px; transition: transform .2s cubic-bezier(.3, 1.6, .5, 1), box-shadow .2s; }
+body.saas .plan-card:hover { transform: translateY(-4px); }
+body.saas .plan-card.is-popular,
+body.saas .plan-card.is-recommended {
+  background:
+    linear-gradient(#170d27, #170d27) padding-box,
+    var(--grad) border-box;
+  border: 2px solid transparent;
+  box-shadow: 0 0 40px rgba(255, 79, 216, .28);
+}
+body.saas .plan-unit strong { color: var(--lime); }
+body.saas .plan-features .msym { color: var(--lime); }
+body.saas .finder-result { background: var(--surface-2); border: 1px solid var(--border-strong); }
+body.saas .compare td:nth-child(3) strong { color: var(--lime); }
+
+/* Tables */
+body.saas .data-table th { color: var(--text-3); border-color: var(--border); }
+body.saas .data-table td { border-color: var(--border); }
+
+/* Busy bar */
+body.saas .busy { background: var(--grad); background-size: 40% 100%; background-repeat: no-repeat; }
+
+@media (prefers-reduced-motion: reduce) {
+  body.saas::before, body.saas::after, body.saas .progress-bar { animation: none; }
+}

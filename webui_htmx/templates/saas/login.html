@@ -4,8 +4,9 @@
 <section class="login-wrap">
   <div class="login-card">
     <div class="login-logo msym" aria-hidden="true">movie</div>
-    <h1>Turn any idea into a ready-to-post video</h1>
-    <p class="muted">Script, voiceover, footage and captions in a few minutes. Made for YouTube Shorts, Instagram Reels and TikTok.</p>
+    <h1>Turn any idea into a <span class="grad-text">viral Short</span> ⚡</h1>
+    <p class="muted">Script, voice, footage and captions, done for you in minutes.</p>
+    <div class="login-perks"><span>🎬 YouTube Shorts</span><span>📸 Reels</span><span>🎵 TikTok</span><span>🌍 12 languages</span></div>
 
     {% if error %}<div class="alert alert-error" role="alert"><span class="msym">error</span><div>{{ error }}</div></div>{% endif %}
 
@@ -30,6 +31,7 @@
     <div class="alert alert-warning"><span class="msym">warning</span><div>Sign-in is not set up yet. An administrator needs to add <code>GOOGLE_CLIENT_ID</code> and <code>GOOGLE_CLIENT_SECRET</code>.</div></div>
     {% endif %}
 
+    <p class="muted small"><span class="sticker">Free</span> 3 videos a month, no card needed · <a href="/pricing">See pricing</a></p>
     <p class="fine-print">By continuing you agree to use generated videos responsibly and to review them before publishing.</p>
   </div>
 </section>

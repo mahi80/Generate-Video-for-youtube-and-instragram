@@ -26,7 +26,7 @@ from webui_htmx.saas.settings import settings
 SESSION_USER_KEY = "user"
 # 会话里缓存的用户信息定期回数据库校验，停用账号或角色变更最多延迟这么久生效。
 SESSION_REVALIDATE_SECONDS = 300
-PUBLIC_PREFIXES = ("/login", "/auth/", "/static/", "/healthz", "/favicon")
+PUBLIC_PREFIXES = ("/login", "/auth/", "/static/", "/healthz", "/favicon", "/pricing")
 # Studio（完整编辑器）会读写全局配置和平台 API Key，只对管理员开放。
 ADMIN_PREFIXES = (
     "/studio", "/run", "/fragment/", "/dialog/", "/upload", "/media/", "/download/", "/admin",
@@ -62,6 +62,7 @@ def _session_payload(user: db.User) -> dict:
         "name": user.name or user.email.split("@")[0],
         "picture": user.picture_url or "",
         "role": user.role,
+        "plan": user.plan or "free",
         "checked_at": time.time(),
     }
 
@@ -79,7 +80,7 @@ def sign_in(request: Request, *, email: str, name: str, picture: str, google_sub
         if user is None:
             has_admin = session.scalar(select(db.User.id).where(db.User.role == "admin").limit(1))
             # 列默认值只在 INSERT 时生效，这里显式赋值，后面的启用检查才可靠。
-            user = db.User(email=email, role="user", is_active=True)
+            user = db.User(email=email, role="user", plan="free", is_active=True)
             if settings.is_admin_email(email) or (not settings.admin_emails and not has_admin):
                 user.role = "admin"
             session.add(user)
@@ -197,7 +198,7 @@ class AuthGate(BaseHTTPMiddleware):
         path = request.url.path
         if not settings.enabled or path.startswith(PUBLIC_PREFIXES):
             request.state.user = None
-            if settings.enabled and path.startswith(("/login", "/auth/")):
+            if settings.enabled and path.startswith(("/login", "/auth/", "/pricing")):
                 request.state.user = _refresh_session_user(request)
             return await call_next(request)
 

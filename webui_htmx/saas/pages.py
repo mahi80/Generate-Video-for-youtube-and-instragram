@@ -11,7 +11,7 @@ from loguru import logger
 from sqlalchemy import func, select
 
 from app.utils import utils
-from webui_htmx.saas import db, jobs
+from webui_htmx.saas import db, jobs, plans
 from webui_htmx.saas.auth import current_user
 from webui_htmx.saas.settings import settings
 
@@ -50,12 +50,26 @@ def _job_view(job: db.VideoJob) -> dict:
 # -----------------------------------------------------------------------------
 
 
+def _usage(request: Request) -> dict | None:
+    user = current_user(request)
+    if not user:
+        return None
+    with db.session_scope() as session:
+        return plans.usage(session, user)
+
+
+@router.get("/pricing", response_class=HTMLResponse)
+def pricing_page(request: Request):
+    return render(request, "pricing.html", plans=plans.PLANS, usage=_usage(request))
+
+
 @router.get("/create", response_class=HTMLResponse)
 def create_page(request: Request):
     return render(
         request, "create.html",
         languages=jobs.LANGUAGES, lengths=jobs.LENGTHS, styles=jobs.STYLES,
         voices=jobs.VOICES, formats=jobs.FORMATS, examples=jobs.EXAMPLE_TOPICS,
+        usage=_usage(request),
     )
 
 
@@ -112,6 +126,9 @@ async def create_start(request: Request):
         return render(request, "partials/start_error.html",
                       error="Write or generate a script first (step 3).")
     user = current_user(request)
+    usage = _usage(request)
+    if usage and usage["exhausted"]:
+        return render(request, "partials/quota.html", usage=usage)
     from starlette.concurrency import run_in_threadpool
 
     try:
@@ -136,7 +153,7 @@ def videos_page(request: Request):
     user = current_user(request)
     with db.session_scope() as session:
         views = [_job_view(job) for job in jobs.list_jobs(session, user)]
-    return render(request, "videos.html", jobs=views)
+    return render(request, "videos.html", jobs=views, usage=_usage(request))
 
 
 @router.get("/videos/{job_id}/card", response_class=HTMLResponse)
@@ -232,6 +249,7 @@ def admin_page(request: Request):
             "stats": stats,
             "users": [
                 {"id": u.id, "email": u.email, "name": u.name, "role": u.role, "active": u.is_active,
+                 "plan": u.plan or plans.DEFAULT_PLAN,
                  "created_at": u.created_at, "last_login_at": u.last_login_at,
                  "videos": video_counts.get(u.id, 0)}
                 for u in users
@@ -247,7 +265,7 @@ def admin_page(request: Request):
                 for job, email in recent_jobs
             ],
         }
-    return render(request, "admin.html", **context)
+    return render(request, "admin.html", plans=plans.PLANS, **context)
 
 
 @router.post("/admin/users/{user_id}/{action}")
@@ -266,5 +284,7 @@ def admin_user_action(request: Request, user_id: str, action: str):
                 user.is_active = False
             elif action == "enable":
                 user.is_active = True
+            elif action.startswith("plan-") and action[5:] in plans.PLANS:
+                user.plan = action[5:]
             logger.info(f"admin {me['email']} applied {action} to {user.email}")
     return RedirectResponse("/admin", status_code=303)

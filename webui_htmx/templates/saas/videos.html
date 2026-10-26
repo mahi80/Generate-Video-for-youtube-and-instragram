@@ -3,11 +3,12 @@
 {% block content %}
 <div class="wizard-head row-between">
   <div>
-    <h1>My videos</h1>
-    <p class="muted">Everything you've made. Videos in progress update by themselves.</p>
+    <h1>Your videos 🎬</h1>
+    <p class="muted">Everything you've cooked. In-progress ones update live.</p>
   </div>
   <a class="btn btn-primary btn-lg" href="/create"><span class="msym" aria-hidden="true">add</span> New video</a>
 </div>
+{% include "partials/usage.html" %}
 {% if jobs %}
 <div class="job-grid">
   {% for job in jobs %}{% include "partials/job_card.html" %}{% endfor %}
@@ -15,9 +16,9 @@
 {% else %}
 <div class="empty-state">
   <div class="empty-emoji msym" aria-hidden="true">movie</div>
-  <h2>No videos yet</h2>
-  <p class="muted">Your first video takes about five minutes from idea to download.</p>
-  <a class="btn btn-primary btn-lg" href="/create">Create your first video</a>
+  <h2>Nothing here yet 👀</h2>
+  <p class="muted">Your first video takes about 5 minutes, idea to download.</p>
+  <a class="btn btn-primary btn-lg" href="/create">Make your first video 🚀</a>
 </div>
 {% endif %}
 {% endblock %}

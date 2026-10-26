@@ -1,0 +1,18 @@
+{% if usage %}
+<div class="usage-meter{{ ' is-full' if usage.exhausted }}">
+  <div class="usage-text">
+    <strong>{{ usage.plan.name }} plan</strong>
+    {% if usage.unlimited %}
+    <span class="muted">· {{ usage.used }} videos this month · admin, no limit</span>
+    {% else %}
+    <span class="muted">· {{ usage.used }} of {{ usage.limit }} videos used this month</span>
+    {% endif %}
+    {% if usage.plan.id != 'agency' %}<a href="/pricing" class="usage-upgrade">Upgrade</a>{% endif %}
+  </div>
+  {% if not usage.unlimited %}
+  <div class="progress" role="progressbar" aria-valuenow="{{ usage.percent }}" aria-valuemin="0" aria-valuemax="100">
+    <div class="progress-bar" style="width: {{ usage.percent }}%"></div>
+  </div>
+  {% endif %}
+</div>
+{% endif %}

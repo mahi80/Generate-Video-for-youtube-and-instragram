@@ -18,12 +18,19 @@
 <section class="card admin-section">
   <h2>Users</h2>
   <div class="table-wrap"><table class="data-table">
-    <thead><tr><th>Email</th><th>Name</th><th>Role</th><th>Videos</th><th>Joined</th><th>Last sign-in</th><th class="num">Actions</th></tr></thead>
+    <thead><tr><th>Email</th><th>Name</th><th>Role</th><th>Plan</th><th>Videos</th><th>Joined</th><th>Last sign-in</th><th class="num">Actions</th></tr></thead>
     <tbody>
     {% for u in users %}
       <tr class="{{ 'is-disabled' if not u.active }}">
         <td>{{ u.email }}</td><td>{{ u.name }}</td>
         <td><span class="badge {{ 'badge-admin' if u.role == 'admin' }}">{{ u.role }}</span>{% if not u.active %} <span class="badge badge-off">disabled</span>{% endif %}</td>
+        <td>
+          <form method="post" class="plan-form" onchange="this.action='/admin/users/{{ u.id }}/plan-' + this.plan.value; this.submit()">
+            <div class="select"><select name="plan" aria-label="Plan for {{ u.email }}">
+              {% for key, plan in plans.items() %}<option value="{{ key }}" {{ 'selected' if u.plan == key }}>{{ plan.name }}</option>{% endfor %}
+            </select></div>
+          </form>
+        </td>
         <td class="num">{{ u.videos }}</td>
         <td>{{ u.created_at.strftime('%Y-%m-%d') }}</td>
         <td>{{ u.last_login_at.strftime('%Y-%m-%d %H:%M') if u.last_login_at else '–' }}</td>

@@ -330,21 +330,21 @@ def friendly_error(error: str) -> str:
 def stage(job: db.VideoJob) -> tuple[str, str]:
     """A plain-language description of where the job is."""
     if job.status == "queued":
-        return "schedule", "Waiting for a free slot…"
+        return "schedule", "In the queue, you're up next ⏳"
     if job.status == "complete":
-        return "task_alt", "Your video is ready!"
+        return "task_alt", "It's ready! Go post it 🔥"
     if job.status == "failed":
         return "error", job.error or "Something went wrong."
     progress = job.progress
     if progress < 30:
-        return "graphic_eq", "Recording the voiceover…"
+        return "graphic_eq", "Warming up the mic 🎙️"
     if progress < 40:
-        return "text_fields", "Adding captions…"
+        return "text_fields", "Adding captions 💬"
     if progress < 50:
-        return "movie", "Picking footage for every sentence…"
+        return "movie", "Finding footage for every line 🎞️"
     if progress < 95:
-        return "auto_awesome", "Editing your video…"
-    return "progress_activity", "Finishing up…"
+        return "auto_awesome", "Editing like a pro ✂️"
+    return "progress_activity", "Final touches ✨"
 
 
 def user_job(session, job_id: str, user: dict) -> db.VideoJob | None:

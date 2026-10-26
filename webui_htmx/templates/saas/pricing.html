@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+{% block title %}Pricing{% endblock %}
+{% block content %}
+{% if not user %}
+<header class="saas-nav">
+  <a class="saas-brand" href="/"><span class="msym" aria-hidden="true">movie</span> MoneyPrinterTurbo</a>
+  <nav class="saas-links" aria-label="Main"><a href="/pricing" class="is-active">Pricing</a></nav>
+  <div class="saas-user"><a class="btn btn-primary btn-sm" href="/login">Sign in free</a></div>
+</header>
+{% endif %}
+
+<section class="pricing-hero">
+  <h1>Pay per <span class="grad-text">video</span>.<br>Not per credit. 💸</h1>
+  <p class="muted">Every plan makes complete Shorts: script, voiceover, footage matched to each sentence, captions and music. No credit maths, and failed videos never count.</p>
+  <div class="billing-toggle" role="radiogroup" aria-label="Billing period">
+    <label><input type="radio" name="billing" value="monthly" checked onchange="setBilling('monthly')"><span>Monthly</span></label>
+    <label><input type="radio" name="billing" value="yearly" onchange="setBilling('yearly')"><span>Yearly <em>save ~20%</em></span></label>
+  </div>
+</section>
+
+<section class="finder card" aria-labelledby="finder-title">
+  <div class="finder-head">
+    <span class="msym" aria-hidden="true">auto_awesome</span>
+    <div>
+      <h2 id="finder-title">Not sure? 3 taps and we'll tell you 🎯</h2>
+      <p class="muted">We'll point you to the plan that fits. Nothing to sign up for.</p>
+    </div>
+  </div>
+  <div class="finder-questions">
+    <fieldset>
+      <legend>1. What do you make?</legend>
+      <div class="pill-group">
+        <label class="pill"><input type="radio" name="q1" value="personal"><span><strong>Just trying it</strong></span></label>
+        <label class="pill"><input type="radio" name="q1" value="channel"><span><strong>My own channel</strong></span></label>
+        <label class="pill"><input type="radio" name="q1" value="business"><span><strong>Content for a business</strong></span></label>
+        <label class="pill"><input type="radio" name="q1" value="clients"><span><strong>Videos for clients</strong></span></label>
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend>2. How often do you want to post?</legend>
+      <div class="pill-group">
+        <label class="pill"><input type="radio" name="q2" value="3"><span><strong>Now and then</strong><small>a few a month</small></span></label>
+        <label class="pill"><input type="radio" name="q2" value="30"><span><strong>Most days</strong><small>up to 1 a day</small></span></label>
+        <label class="pill"><input type="radio" name="q2" value="100"><span><strong>Several a day</strong><small>2–3 a day</small></span></label>
+        <label class="pill"><input type="radio" name="q2" value="300"><span><strong>Many channels</strong><small>10 a day</small></span></label>
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend>3. Is it for work?</legend>
+      <div class="pill-group">
+        <label class="pill"><input type="radio" name="q3" value="no"><span><strong>Just for fun</strong></span></label>
+        <label class="pill"><input type="radio" name="q3" value="yes"><span><strong>Yes, it's for work</strong></span></label>
+      </div>
+    </fieldset>
+  </div>
+  <div id="finder-result" class="finder-result" hidden></div>
+</section>
+
+<section class="plan-grid" aria-label="Plans">
+  {% for key, plan in plans.items() %}
+  <article class="plan-card{{ ' is-popular' if plan.popular }}{{ ' is-current' if usage and usage.plan.id == key }}" id="plan-{{ key }}" data-plan="{{ key }}">
+    {% if plan.popular %}<div class="plan-badge">Most popular</div>{% endif %}
+    <h2>{{ plan.name }}</h2>
+    <p class="muted">{{ plan.tagline }}</p>
+    <div class="plan-price">
+      {% if plan.monthly == 0 %}
+      <span class="amount">$0</span><span class="per">forever</span>
+      {% else %}
+      <span class="amount" data-monthly="${{ plan.monthly }}" data-yearly="${{ plan.yearly }}">${{ plan.monthly }}</span><span class="per">/ month</span>
+      {% endif %}
+    </div>
+    <p class="plan-unit">
+      {% if plan.monthly == 0 %}{{ plan.videos }} videos to try every feature
+      {% else %}<strong data-monthly="≈ ${{ '%.2f' | format(plan.monthly / plan.videos) }}" data-yearly="≈ ${{ '%.2f' | format(plan.yearly / plan.videos) }}">≈ ${{ '%.2f' | format(plan.monthly / plan.videos) }}</strong> per finished video{% endif %}
+    </p>
+    <ul class="plan-features">
+      {% for feature in plan.features %}<li><span class="msym" aria-hidden="true">check_circle</span>{{ feature }}</li>{% endfor %}
+    </ul>
+    {% if usage and usage.plan.id == key %}
+      <span class="btn btn-secondary btn-full is-disabled">Your current plan</span>
+    {% elif plan.monthly == 0 %}
+      <a class="btn btn-secondary btn-full" href="{{ '/create' if user else '/login' }}">Start free</a>
+    {% else %}
+      <a class="btn {{ 'btn-primary' if plan.popular else 'btn-secondary' }} btn-full" href="{{ '/create' if user else '/login' }}">Start free</a>
+      <p class="plan-note">Upgrade anytime · card payments launching soon</p>
+    {% endif %}
+  </article>
+  {% endfor %}
+</section>
+
+<section class="compare card" aria-labelledby="compare-title">
+  <h2 id="compare-title">What a 40-second Short really costs</h2>
+  <div class="table-wrap"><table class="data-table">
+    <thead><tr><th></th><th>Typical credit-based AI clip tool</th><th>MoneyPrinterTurbo Pro</th></tr></thead>
+    <tbody>
+      <tr><td>Cost per finished Short</td><td>$3–7 in clip credits alone¹</td><td><strong>≈ $0.19</strong>, everything included</td></tr>
+      <tr><td>Script and voiceover</td><td>Separate tools</td><td><strong>Included</strong></td></tr>
+      <tr><td>Captions</td><td>Basic or none</td><td><strong>Karaoke-style, word by word</strong></td></tr>
+      <tr><td>Footage that matches what's said</td><td>Generated per prompt</td><td><strong>Picked for every sentence</strong></td></tr>
+      <tr><td>Failed generations</td><td>Varies by tool</td><td><strong>Never count</strong></td></tr>
+      <tr><td>Billing</td><td>Credits expire each month</td><td><strong>Monthly by default, cancel anytime</strong></td></tr>
+    </tbody>
+  </table></div>
+  <p class="fine-print">¹ A 40-second Short needs about five 8-second AI clips. Estimate based on published credit prices for 720p clips on popular AI video platforms, October 2026.</p>
+</section>
+
+<section class="faq" aria-labelledby="faq-title">
+  <h2 id="faq-title">Questions</h2>
+  <details><summary>What counts as a video?</summary><p>One finished video that you can download. Writing scripts, listening to voices and editing the script are free and unlimited.</p></details>
+  <details><summary>Do failed videos use my allowance?</summary><p>No. If something goes wrong while making a video, it doesn't count.</p></details>
+  <details><summary>When does my allowance reset?</summary><p>On the 1st of every month. Unused videos don't carry over.</p></details>
+  <details><summary>Can I use the videos commercially?</summary><p>Yes. Footage comes from stock libraries that allow commercial use. Always watch your video before publishing it.</p></details>
+  <details><summary>Can I cancel anytime?</summary><p>Yes. Plans are monthly unless you choose yearly, and you keep access until the end of the period you paid for.</p></details>
+  <details><summary>Which languages are supported?</summary><p>English, Hindi, Spanish, Portuguese, French, German, Italian, Indonesian, Arabic, Japanese, Korean and Chinese, each with a native voice.</p></details>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function setBilling(period) {
+    document.querySelectorAll("[data-monthly]").forEach(function (el) {
+      el.textContent = el.dataset[period];
+    });
+  }
+
+  var PLAN_NAMES = {free: "Free", creator: "Creator", pro: "Pro", agency: "Agency"};
+  var VOLUME_PLAN = {"3": "free", "30": "creator", "100": "pro", "300": "agency"};
+  var ORDER = ["free", "creator", "pro", "agency"];
+
+  function recommend() {
+    var q1 = (document.querySelector("input[name=q1]:checked") || {}).value;
+    var q2 = (document.querySelector("input[name=q2]:checked") || {}).value;
+    var q3 = (document.querySelector("input[name=q3]:checked") || {}).value;
+    if (!q1 || !q2 || !q3) return;
+    var plan = VOLUME_PLAN[q2];
+    var reasons = [];
+    reasons.push({"3": "a few videos a month", "30": "up to one video a day", "100": "two or three videos a day", "300": "around ten videos a day"}[q2]);
+    if (q1 === "clients" && ORDER.indexOf(plan) < ORDER.indexOf("agency")) { plan = "agency"; reasons.push("work for clients"); }
+    if (q1 === "business" && plan === "free") { plan = "creator"; reasons.push("regular business content"); }
+    if (q3 === "yes" && plan === "free") { plan = "creator"; reasons.push("work content"); }
+    var result = document.getElementById("finder-result");
+    result.hidden = false;
+    result.innerHTML = "";
+    var text = document.createElement("p");
+    text.innerHTML = "We recommend <strong>" + PLAN_NAMES[plan] + "</strong> for " + reasons.join(" and ") + ".";
+    var link = document.createElement("a");
+    link.className = "btn btn-primary";
+    link.href = "#plan-" + plan;
+    link.textContent = "See " + PLAN_NAMES[plan];
+    result.appendChild(text);
+    result.appendChild(link);
+    document.querySelectorAll(".plan-card").forEach(function (card) {
+      card.classList.toggle("is-recommended", card.dataset.plan === plan);
+    });
+  }
+  document.querySelectorAll(".finder input").forEach(function (input) {
+    input.addEventListener("change", recommend);
+  });
+</script>
+{% endblock %}

@@ -15,14 +15,14 @@
   <span class="muted"><span class="msym" aria-hidden="true">schedule</span> <span id="estimate">{% if seconds %}About {{ seconds }} seconds{% else %}About 0 seconds{% endif %}</span></span>
   <button type="button" class="btn btn-tertiary"
     hx-post="/create/script" hx-include="#wizard" hx-target="#script-step" hx-disabled-elt="this">
-    <span class="msym" aria-hidden="true">refresh</span> Write a new one
+    <span class="msym" aria-hidden="true">refresh</span> Try another one
   </button>
 </div>
 <div class="create-cta" hx-swap-oob="innerHTML:#result">
-  <p class="muted">Happy with the script? We'll record the voice, pick footage for every sentence, add captions and music.</p>
+  <p class="muted">Script looking good? We'll record the voice, find footage for every line, add captions and music. You just sit back 😎</p>
   <button type="button" class="btn btn-primary btn-xl"
     hx-post="/create/start" hx-include="#wizard" hx-target="#result" hx-disabled-elt="this">
-    <span class="msym" aria-hidden="true">movie</span> Create my video
+    Create my video 🚀
   </button>
 </div>
 {% endif %}

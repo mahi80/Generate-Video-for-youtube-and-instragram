@@ -3,6 +3,7 @@
   <nav class="saas-links" aria-label="Main">
     <a href="/create" class="{{ 'is-active' if path.startswith('/create') }}">Create</a>
     <a href="/videos" class="{{ 'is-active' if path.startswith('/videos') }}">My videos</a>
+    <a href="/pricing" class="{{ 'is-active' if path.startswith('/pricing') }}">Pricing</a>
     {% if user.role == 'admin' %}
     <a href="/studio" class="{{ 'is-active' if path.startswith('/studio') }}">Studio</a>
     <a href="/admin" class="{{ 'is-active' if path.startswith('/admin') }}">Admin</a>

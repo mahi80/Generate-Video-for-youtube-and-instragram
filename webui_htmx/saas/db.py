@@ -39,6 +39,8 @@ class User(Base):
     # Google 账号的稳定标识（OpenID Connect 的 sub）；开发登录时为空。
     google_sub: Mapped[str | None] = mapped_column(String(64), unique=True, nullable=True)
     role: Mapped[str] = mapped_column(String(20), default="user")
+    # 订阅套餐，取值见 webui_htmx/saas/plans.py。
+    plan: Mapped[str] = mapped_column(String(20), default="free", server_default="free")
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     last_login_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)

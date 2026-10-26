@@ -214,3 +214,82 @@ input[type=email] {
 
 /* Studio pages get the same nav bar. */
 body.studio-with-nav .st-key-top_bar { top: 53px; }
+
+
+/* Usage meter */
+.usage-meter {
+  margin-top: 14px; padding: 12px 14px; max-width: 560px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+}
+.usage-meter.is-full { border-color: var(--warning-fg); background: var(--warning-bg); }
+.usage-text { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px; margin-bottom: 8px; font-size: 14px; }
+.usage-upgrade { margin-left: auto; font-weight: 600; }
+.plan-form { margin: 0; }
+.plan-form select { padding: 4px 28px 4px 8px; font-size: 13px; }
+
+/* Pricing */
+.pricing-hero { text-align: center; max-width: 720px; margin: 10px auto 26px; }
+.pricing-hero h1 { font-size: 36px; letter-spacing: -.025em; margin: 0 0 10px; line-height: 1.15; }
+.pricing-hero p { font-size: 16px; }
+.billing-toggle {
+  display: inline-flex; margin-top: 18px; padding: 4px; gap: 4px;
+  background: var(--surface-2); border: 1px solid var(--border); border-radius: 999px;
+}
+.billing-toggle label { cursor: pointer; }
+.billing-toggle input { position: absolute; opacity: 0; pointer-events: none; }
+.billing-toggle span { display: block; padding: 7px 16px; border-radius: 999px; font-weight: 600; color: var(--text-2); }
+.billing-toggle em { font-style: normal; color: var(--success-fg); font-size: 12.5px; }
+.billing-toggle input:checked + span { background: var(--surface); color: var(--text); box-shadow: var(--shadow); }
+.billing-toggle input:focus-visible + span { outline: 2px solid var(--focus); }
+
+.finder { margin-bottom: 22px; }
+.finder-head { display: flex; gap: 12px; align-items: flex-start; }
+.finder-head > .msym { font-size: 28px; color: var(--primary); }
+.finder-head h2 { margin: 0; font-size: 18px; }
+.finder-head p { margin: 2px 0 0; }
+.finder-questions { display: grid; gap: 14px; margin-top: 14px; }
+.finder fieldset { border: 0; padding: 0; margin: 0; }
+.finder legend { font-weight: 650; margin-bottom: 8px; }
+.finder-result {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 12px; justify-content: space-between;
+  margin-top: 16px; padding: 12px 14px; border-radius: 12px; background: var(--primary-soft);
+}
+.finder-result p { margin: 0; font-size: 15px; }
+
+.plan-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; align-items: stretch; }
+.plan-card {
+  position: relative; display: flex; flex-direction: column; gap: 6px;
+  padding: 22px 18px; background: var(--surface);
+  border: 1.5px solid var(--border); border-radius: 18px; box-shadow: var(--shadow);
+  transition: border-color .15s, transform .15s;
+}
+.plan-card h2 { margin: 0; font-size: 20px; }
+.plan-card > p { margin: 0; }
+.plan-card.is-popular { border-color: var(--primary); }
+.plan-card.is-recommended { border-color: var(--primary); transform: translateY(-4px); box-shadow: 0 0 0 4px var(--primary-soft), var(--shadow-lg); }
+.plan-card.is-current { border-style: dashed; }
+.plan-badge {
+  position: absolute; top: -12px; left: 18px; padding: 3px 10px; border-radius: 999px;
+  background: var(--primary); color: #fff; font-size: 12px; font-weight: 700;
+}
+.plan-price { display: flex; align-items: baseline; gap: 6px; margin-top: 8px; }
+.plan-price .amount { font-size: 38px; font-weight: 800; letter-spacing: -.03em; }
+.plan-price .per { color: var(--text-2); }
+.plan-unit { color: var(--text-2); font-size: 13.5px; min-height: 20px; }
+.plan-unit strong { color: var(--success-fg); }
+.plan-features { list-style: none; padding: 0; margin: 10px 0 14px; display: flex; flex-direction: column; gap: 7px; flex: 1; }
+.plan-features li { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; }
+.plan-features .msym { color: var(--success-fg); font-size: 18px; flex: none; }
+.plan-note { font-size: 12px; color: var(--text-3); text-align: center; margin: 4px 0 0; }
+
+.compare { margin-top: 26px; }
+.compare h2, .faq h2 { margin: 0 0 12px; font-size: 20px; }
+.compare td:first-child { font-weight: 600; }
+.faq { margin-top: 26px; }
+.faq details {
+  border: 1px solid var(--border); border-radius: 12px; background: var(--surface);
+  padding: 0 16px; margin-bottom: 8px;
+}
+.faq summary { cursor: pointer; padding: 14px 0; font-weight: 600; }
+.faq details p { margin: 0 0 14px; color: var(--text-2); }
+@media (max-width: 640px) { .pricing-hero h1 { font-size: 28px; } }

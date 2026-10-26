@@ -2,8 +2,9 @@
 {% block title %}Create a video{% endblock %}
 {% block content %}
 <div class="wizard-head">
-  <h1>Create a video</h1>
-  <p class="muted">Four quick steps. You can change anything before the video is made.</p>
+  <h1>Make something that <span class="grad-text">slaps</span> ✨</h1>
+  <p class="muted">4 steps. Zero editing skills. Ready to post in about 5 minutes.</p>
+  {% include "partials/usage.html" %}
 </div>
 
 <form id="wizard" class="wizard" onsubmit="return false">
@@ -11,11 +12,11 @@
   <section class="step" aria-labelledby="step1">
     <div class="step-num" aria-hidden="true">1</div>
     <div class="step-body">
-      <h2 id="step1">What is your video about?</h2>
+      <h2 id="step1">What's your video about? 💭</h2>
       <textarea id="topic" name="topic" rows="2" maxlength="300" required
-        placeholder="For example: 5 surprising facts about octopuses"></textarea>
+        placeholder="Drop your idea here… e.g. 5 wild facts about octopuses 🐙"></textarea>
       <div class="chips-row" aria-label="Example topics">
-        <span class="muted">Try:</span>
+        <span class="muted">Need ideas? Tap one 👇</span>
         {% for example in examples %}
         <button type="button" class="chip-btn" onclick="setTopic(this.textContent)">{{ example }}</button>
         {% endfor %}
@@ -44,7 +45,7 @@
   <section class="step" aria-labelledby="step2">
     <div class="step-num" aria-hidden="true">2</div>
     <div class="step-body">
-      <h2 id="step2">Pick a style</h2>
+      <h2 id="step2">Pick your vibe 🎨</h2>
       <div class="card-grid">
         {% for key, item in styles.items() %}
         <label class="choice-card">
@@ -56,7 +57,7 @@
         {% endfor %}
       </div>
 
-      <h3>Voice</h3>
+      <h3>Who's talking? 🎙️</h3>
       <div class="card-grid voices">
         {% for key, item in voices.items() %}
         <label class="choice-card voice-card">
@@ -70,7 +71,7 @@
         {% endfor %}
       </div>
 
-      <h3>Format</h3>
+      <h3>Where's it going? 📱</h3>
       <div class="pill-group">
         {% for key, item in formats.items() %}
         <label class="pill"><input type="radio" name="aspect" value="{{ key }}" {{ 'checked' if loop.first }}>
@@ -84,13 +85,13 @@
   <section class="step" aria-labelledby="step3">
     <div class="step-num" aria-hidden="true">3</div>
     <div class="step-body">
-      <h2 id="step3">Your script</h2>
+      <h2 id="step3">Your script ✍️</h2>
       <div id="script-step">
-        <p class="muted">The AI writes what the voice will say. You can edit it afterwards.</p>
+        <p class="muted">AI writes it, you make it yours. Edit anything you like.</p>
         <div class="row-actions">
           <button type="button" class="btn btn-primary btn-lg"
             hx-post="/create/script" hx-include="#wizard" hx-target="#script-step" hx-disabled-elt="this">
-            <span class="msym" aria-hidden="true">auto_awesome</span> Write my script
+            <span class="msym" aria-hidden="true">auto_awesome</span> Write it for me
           </button>
           <button type="button" class="btn btn-tertiary"
             hx-post="/create/script" hx-vals='{"own": "1"}' hx-include="#wizard" hx-target="#script-step">
@@ -105,9 +106,9 @@
   <section class="step" aria-labelledby="step4">
     <div class="step-num" aria-hidden="true">4</div>
     <div class="step-body">
-      <h2 id="step4">Make the video</h2>
+      <h2 id="step4">Cook the video 🔥</h2>
       <div id="result">
-        <p class="muted">Write or generate the script first, then press <strong>Create my video</strong>.</p>
+        <p class="muted">Get a script in step 3 first, then hit <strong>Create my video</strong> 🚀</p>
       </div>
     </div>
   </section>
